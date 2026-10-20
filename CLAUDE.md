@@ -1,0 +1,48 @@
+# SkyEye
+(Renamed from "VOD Scout" on 2026-10-19. The install folder is still called `vod-scout`, and the Stream Desk marker format and file names still say `vodscout-markers` on purpose, so Stream Desk keeps working. Keep both as they are.)
+
+Windows app for Stan (VTuber 호시아, Chzzk streamer). It finds "fun points" in his stream recordings for YouTube edits.
+**Stan picks the moments himself; editors only edit.** The job is to surface good candidates for him to Keep/Skip, then send the kept ones to his editors through Discord.
+Talk to Stan in Korean or English (he writes either). He's not a programmer: explain in plain words and tell him exactly what to click or delete.
+
+## Run / layout
+- Start: `SkyEye.bat` (calls `setup.bat auto` the first time). It runs `app.py`, a local web GUI (ThreadingHTTPServer) opened in an Edge app window.
+- `scout.py`: the engine (ffmpeg, Whisper, signals, timeline, Claude calls, HTML report, previews, Drive/rclone).
+- `twopass.py`: the two-pass analysis (Haiku scan → Sonnet judge → overview).
+- `app.py`: GUI server, config rendering, job queue and worker, review, Discord posting (only on "Send to editors"), window/watchdog.
+- `discord_post.py`: webhook posting (the kept-list card; per-pick clips only when the Editor page isn't configured).
+- `editor_page.py`: builds the editors' page (one self-contained index.html with embedded data, clips next to it).
+- `publish.py`: uploads that page and its clips to Cloudflare R2 (S3 API, hand-written SigV4 over httpx, no extra packages), keys in `r2_keys.json`, link kept in `published.json` per result.
+- `learn.py`: learns the channel style profile from his YouTube channel.
+- `ui/index.html`: the whole single-page UI (Recordings, Jobs, Reports + review mode, Settings).
+- `STREAM_DESK_MARKERS.md`: spec for ⭐ markers (and, since version 2, the stream chat) written by his other program, Stream Desk, now called **Arkbird**. The spec for the chat side is `ARKBIRD_CHAT_LOG.md` (in the Arkbird session's hands).
+- Private files, never commit, send or print: `api_key.txt`, `rclone.conf`, `discord_webhook.txt`, `r2_keys.json`, `config.yaml` (may hold paths).
+- **Git:** the code lives in https://github.com/Hoshia05/Skyeye (branch `main`); that is the source of truth. `.gitignore` keeps the private files and Stan's own data out (`api_key.txt`, `rclone.conf`, `discord_webhook.txt`, `r2_keys.json`, `config.yaml`, `taste.json`, `channel_profile.md`, results, downloads); never `git add -f` them. Specs for the other programs are in `docs/`. Commit small and often with plain messages, and push after a change Stan has asked for.
+- Deployed at `C:\Users\arkht\Downloads\vod-scout_1\vod-scout`. Dev copy is edited in the cloud session, then pushed to the PC through the device bridge. If the PC is offline, deliver a zip. After deploying, **verify file sizes** by listing the folder (committing again from the same staged path can silently leave the old version on the PC; if sizes are stale, copy the file to a new staged folder and commit again) (a stale `scout.py` once caused an AttributeError).
+
+## Hard rules
+1. **Never delete, move, rename or modify anything on Google Drive.** Drive is read-only: `_guard_rclone` in `scout.py` allows only `lsjson`, `lsd` and `copyto` from Drive to local, and blocks writes to the Drive remote. Only SkyEye's own temporary local download may be removed (`remove_local_copy`, refuses synced cloud folders). Don't widen the guard. No report uploads to Drive.
+2. Keep `api_key.txt`, `rclone.conf`, `discord_webhook.txt` and `r2_keys.json` private. Editors get reports only through Discord: the card carries a link to the Cloudflare R2 editor page (the one sanctioned place SkyEye uploads to; never Drive).
+3. The app must not go to sleep or lose its connection: `keep_running` defaults true, the watchdog never quits on its own, Edge launches with no-throttle flags, `SetThreadExecutionState` is set during jobs. Don't undo this.
+4. Be careful with resources: Whisper unloads after 2 min idle, process priority is BELOW_NORMAL, and the 3080 PC is also his gaming/streaming machine.
+
+## Pipeline
+Drive download (rclone) → ffmpeg extracts each audio track to 16 kHz WAV → loudness per 0.5 s (`t{n}.db.npy`) → faster-whisper large-v3 per track (`t{n}.transcript.json`, 20-min chunks passed as numpy arrays, because PyAV 19 breaks on files) → signals (spikes, donations) → timeline lines `[H:MM:SS] label: text`, plus ⭐ marker lines and, when Arkbird saved chat, 💬 chat / 💰 후원 채팅 / 📈 chat-burst lines → two-pass Claude (with the stream's **focus** instructions if any) → HTML report + 480p previews. **Nothing is posted after analysis**: Stan reviews (Keep/Skip) and "Send to editors" posts the kept list (card plus one clip per kept pick). Auto-post on report and the report-header Discord button were removed on purpose (2026-10-19). With the Editor page set up, "Send to editors" builds the page, uploads it plus the kept clips to R2 (`r/<random token>/index.html`, `clips/…mp4`, token reused per stream) and posts ONE card with the link; if the upload fails the card still posts with a warning. R2 clears objects through a lifecycle rule Stan set in Cloudflare (he chose 180 days). Uploaded clips are 360p copies (`web_clips/<key>.s.mp4`, made with NVENC cq35 or x264 crf31, 64k audio; `hosting.clip_quality: original` uploads the 480p previews instead). `published.json` lists the clips in the bucket; a resend uploads only new ones and deletes clips no longer on the page. The YouTube archive can't be used for the page's video because it isn't reliably in sync with the recording.
+- Caches are per **track number** (`t{n}`), not role; `migrate_legacy` renames old role-named files.
+- Markers come from OBS Hybrid MP4 chapters or a `*.markers.json` sidecar (matched by name or duration ±5 s; the closest length wins, and a rename with no match is never given a wrong file).
+- **Focus (per-stream instructions, added 2026-10-20):** `focus_presets` in config (name, filename keywords, text; the built-in Ace Combat and Trickal examples are used until the key exists). Analyze/Re-run opens a dialog (Auto = first preset whose keyword is in the file name; None; a preset; plus extra text). `/api/jobs` and `/api/result/redo` take `focus: {preset: "__auto__"|name|null, text}` and resolve it per recording on the server (`scout.resolve_focus`); the worker passes `cfg["focus"]` to `cmd_run`. `focus_block()` adds a "이번 방송 특별 지시" section to **both** prompts; with no focus the prompts are byte-identical to before (keep it that way). Pass 1 items may carry `focus`, pass 2 items `focus_match`; focus candidates are never cut by the candidate cap, aren't counted in picks-per-hour, and are kept separately even when close together (compilations over several streams need every instance). `meta.json` stores `focus` (`preset`, `text`, `extra`); a saved analysis keeps the focus it was made with. UI: 🎯 chip, Focus filter and badge (report, list, editors' page).
+- **Chat (added 2026-10-20):** Arkbird's markers file version 2 has `chat: [{t, type: chat|donation|subscription|gap, nick, role: streamer|manager|viewer, text, amount?}]`, `t` = seconds from the start of the recording, raw (no delay applied). `scout.load_chat` reads `<work>/markers.json` or the sidecar and saves `<work>/chat.json` (`[t, type, nick, role, text, amount?]`) so re-runs work without the file. `chat_delay_seconds` (default 6) is subtracted on use only; the raw `t` stays in `chat.json`. Streamer lines are skipped; ordinary chat is thinned to about one line per 5 s and a crowd of near-identical messages becomes one "반응 N개" line, donations always stay; bursts (≥3× the median 30 s window and ≥4 messages) become 📈 lines. The prompts say "소규모 방송이라 채팅 반응은 없습니다." only when there is no chat. `meta.json` has `chat_count` and `chat_delay`. Version 1 files and a missing file behave exactly as before. Drive lookups only download the markers files closest in time when the recording was renamed (there can now be one per stream).
+- Reports are **HTML only** (no MD/CSV). "Send to editors" writes `…_편집목록.html` and posts it to Discord.
+- Previews live in `previews/` per result and are removed after `preview_keep_days` (90). Discord clips are deleted right after posting.
+
+## Claude backends
+- Default is his subscription via Claude Code: `claude -p --output-format json --json-schema … --tools "" --no-session-persistence`, env `MAX_THINKING_TOKENS` set and `ANTHROPIC_API_KEY` removed. The alternative is the API with a forced tool.
+- Scan model `claude-haiku-4-5-20251001` (15-min windows, 90 s overlap, 3 parallel, thinking 0). Judge model `claude-sonnet-5-5` (groups of 7, thinking 3000, plus `taste.json` Keep/Skip examples).
+- Without `MAX_THINKING_TOKENS` Claude Code once burned 91k output tokens; don't drop it.
+
+## Conventions
+- Run `python -m py_compile scout.py app.py discord_post.py twopass.py learn.py editor_page.py publish.py`, and syntax-check the script block in `ui/index.html` with `node --check`, before delivering.
+- Test with stand-in recordings and a fake webhook/Drive (rclone `alias` remote), not his real files or webhook. A real run on his 09-28 stream took about 122 s (30 candidates → 22 picks).
+- Settings are written by `render_config` in `app.py`; add a key there and in the UI save body together. Dead keys were removed on purpose (global `youtube_url`, `analysis_mode`, `max_tokens_single_pass`, upload settings); the YouTube link is per stream, in `meta.json`.
+- Scrapped, don't bring back: Jev AI integration, single-pass analysis, "No AI" mode, CLI `.bat` tools, Copy buttons, Drive report upload.
+- Shell safety checks block `rm` with relative globs; use absolute paths.

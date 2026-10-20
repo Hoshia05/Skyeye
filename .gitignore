@@ -1,0 +1,30 @@
+# --- Private: never commit ---
+api_key.txt
+rclone.conf
+discord_webhook.txt
+r2_keys.json
+config.yaml
+config.backup.yaml
+
+# --- Stan's own data (stays on his PC) ---
+taste.json
+channel_profile.md
+state.json
+published.json
+review.json
+
+# --- Generated / downloaded ---
+results/
+downloads/
+track_samples/
+*_scout/
+*.log
+app.log
+
+# --- Python / tooling ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+rclone.exe
+rclone/

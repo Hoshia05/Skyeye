@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SkyEye</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%238b7bff' d='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0e0e13;--side:#121219;--s1:#17171f;--s2:#1e1e29;--s3:#262634;--line:#2a2a3a;--line2:#353547;
+  --ink:#ececf3;--ink2:#c3c3d2;--muted:#8a8aa0;--faint:#5f5f75;
+  --acc:#8b7bff;--acc2:#b3a8ff;--accbg:rgba(139,123,255,.14);--pink:#ff7ac6;
+  --ok:#4ade80;--warn:#fbbf24;--err:#f87171;--r:12px;
+  --c-funny:#fbbf24;--c-react:#f87171;--c-talk:#60a5fa;--c-dono:#f472b6;--c-game:#34d399;--c-collab:#a78bfa;--c-emo:#22d3ee;--c-etc:#94a3b8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 "Pretendard Variable",Pretendard,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#2c2c3c;border-radius:10px;border:2px solid var(--bg)}::-webkit-scrollbar-track{background:transparent}
+.app{display:grid;grid-template-columns:232px 1fr;height:100vh}
+/* sidebar */
+.side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 22px;font-weight:750;font-size:17px;letter-spacing:-.2px}
+.brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--pink));display:grid;place-items:center;box-shadow:0 4px 18px rgba(139,123,255,.35)}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;padding:10px 12px;border-radius:10px;color:var(--ink2);cursor:pointer;text-align:left;font-weight:550}
+.nav button:hover{background:var(--s2)}
+.nav button.on{background:var(--accbg);color:#fff}
+.nav button.on svg{color:var(--acc2)}
+.nav svg{width:18px;height:18px;color:var(--muted);flex:none}
+.nav .badge{margin-left:auto;background:var(--acc);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:0 7px;line-height:18px}
+.side-foot{margin-top:auto;padding:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:grid;gap:7px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:var(--faint)}
+.dot.ok{background:var(--ok);box-shadow:0 0 8px rgba(74,222,128,.5)}.dot.bad{background:var(--warn)}
+/* main */
+main{overflow:auto;position:relative}
+.view{display:none;padding:28px 34px 80px;max-width:1280px;margin:0 auto}
+.view.on{display:block}
+.vh{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.vh h1{font-size:23px;margin:0;letter-spacing:-.4px;font-weight:750}
+.vh .sub{color:var(--muted);font-size:13px}
+.grow{flex:1}
+.btn{border:1px solid var(--line2);background:var(--s2);border-radius:9px;padding:7px 13px;cursor:pointer;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:.12s}
+.btn:hover{background:var(--s3);border-color:#44445a}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}.btn.pri:hover{background:#9a8cff}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink2)}.btn.ghost:hover{background:var(--s2)}
+.btn.danger:hover{border-color:var(--err);color:var(--err)}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:8px}
+.btn svg{width:15px;height:15px}
+.seg{display:inline-flex;background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:7px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;display:flex;align-items:center;gap:7px}
+.seg button.on{background:var(--s3);color:var(--ink)}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.muted{color:var(--muted)}.small{font-size:12.5px}
+.banner{display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,rgba(139,123,255,.16),rgba(255,122,198,.08));border:1px solid rgba(139,123,255,.35);border-radius:var(--r);padding:13px 16px;margin-bottom:18px}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:8px;opacity:.8}
+.empty h3{color:var(--ink);margin:4px 0 6px;font-size:17px}
+/* table */
+.tbl{width:100%;border-collapse:separate;border-spacing:0}
+.tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);font-weight:650;text-align:left;padding:0 12px 9px}
+.tbl td{padding:12px;border-top:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.tbl .name{font-weight:620;color:var(--ink)}
+.tbl td.num{font-variant-numeric:tabular-nums;color:var(--ink2);white-space:nowrap}
+.chk{width:17px;height:17px;accent-color:var(--acc);cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--s3);color:var(--ink2);white-space:nowrap}
+.chip.new{background:rgba(139,123,255,.16);color:var(--acc2)}
+.chip.transcribed{background:rgba(251,191,36,.13);color:var(--warn)}
+.chip.done{background:rgba(74,222,128,.12);color:var(--ok)}
+.chip.busy{background:rgba(96,165,250,.15);color:#93c5fd}
+.chip .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+/* jobs */
+.job-now{padding:22px 24px}
+.job-title{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.job-title h2{margin:0;font-size:18px;letter-spacing:-.2px}
+.steps{display:flex;align-items:flex-start;margin:6px 0 22px}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;font-size:12px;color:var(--faint);font-weight:600}
+.step:not(:last-child)::after{content:"";position:absolute;top:15px;left:calc(50% + 20px);right:calc(-50% + 20px);height:2px;background:var(--line2);border-radius:2px}
+.step.done:not(:last-child)::after{background:var(--acc)}
+.step .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line2);background:var(--s1);margin-bottom:7px;transition:.2s}
+.step .ic svg{width:15px;height:15px}
+.step.done{color:var(--ink2)}.step.done .ic{background:var(--acc);border-color:var(--acc);color:#fff}
+.step.cur{color:var(--ink)}.step.cur .ic{border-color:var(--acc);color:var(--acc2);box-shadow:0 0 0 5px rgba(139,123,255,.15);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 9px rgba(139,123,255,.05)}}
+.bar{height:10px;background:var(--s3);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));border-radius:99px;transition:width .5s}
+.bar.thin{height:5px}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 0;gap:10px}
+.prog-row b{font-size:26px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+details.log{margin-top:18px}
+details.log summary{cursor:pointer;color:var(--muted);font-size:12.5px;font-weight:600}
+pre.logbox{background:#0a0a0e;border:1px solid var(--line);border-radius:10px;padding:12px 14px;max-height:260px;overflow:auto;font:12px/1.55 ui-monospace,Consolas,monospace;color:#b8b8c8;white-space:pre-wrap;margin:10px 0 0}
+.qlist .qi{display:flex;align-items:center;gap:12px;padding:11px 4px;border-top:1px solid var(--line)}
+.qlist .qi:first-child{border-top:0}
+.qi .st{width:22px;display:grid;place-items:center}
+.qi .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:560}
+.qi .mini{width:110px}
+.spin{width:14px;height:14px;border:2px solid var(--s3);border-top-color:var(--acc);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* report list */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.rcard{cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:10px}
+.rcard:hover{border-color:#45455e;transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.rcard h3{margin:0;font-size:15.5px;letter-spacing:-.2px;line-height:1.4}
+.rcard .stats{display:flex;gap:14px;font-size:12.5px;color:var(--muted)}
+.rcard .stats b{color:var(--ink);font-weight:700}
+.rcard .tops{display:grid;gap:5px;font-size:13px}
+.rcard .tops div{display:flex;gap:8px;align-items:baseline}
+.rcard .tops span.t{color:var(--acc2);font-variant-numeric:tabular-nums;font-size:12px;flex:none}
+.rcard .tops span.x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-pill{flex:none;margin-left:auto;font-size:11.5px;font-weight:700;color:var(--warn)}
+/* report detail */
+.back{color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:12px}
+.back:hover{color:var(--ink)}
+.rhead h1{font-size:22px;margin:0 0 4px;letter-spacing:-.4px}
+.rhead .meta{color:var(--muted);font-size:13px;display:flex;gap:14px;flex-wrap:wrap}
+.yt{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.inp{background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:7px 11px;outline:none;min-width:0}
+.inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(139,123,255,.18)}
+.summary{white-space:pre-wrap;color:var(--ink2);line-height:1.7}
+.tl-wrap{position:relative;margin-top:4px}
+.tl-wrap svg{width:100%;display:block;cursor:crosshair;user-select:none}
+.tl-tip{position:absolute;pointer-events:none;background:#000c;border:1px solid var(--line2);padding:5px 9px;border-radius:7px;font-size:12px;white-space:nowrap;transform:translate(-50%,-110%);display:none;z-index:5;max-width:360px;overflow:hidden;text-overflow:ellipsis}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:24px 0 16px}
+.tabs button{border:0;background:none;padding:10px 14px;cursor:pointer;color:var(--muted);font-weight:650;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--acc)}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.fchip{border:1px solid var(--line2);background:none;border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--ink2);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.fchip.on{background:var(--s3);border-color:#4a4a62;color:#fff}
+.fchip i{width:8px;height:8px;border-radius:50%}
+.hl{display:grid;grid-template-columns:5px 1fr;background:var(--s1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:12px;transition:.2s}
+.hl.flash{box-shadow:0 0 0 2px var(--acc)}
+.hl .cbar{background:var(--c-etc)}
+.hl .in{padding:15px 18px}
+.hl .top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hl .n{color:var(--faint);font-weight:700;font-size:12.5px}
+.hl h4{margin:0;font-size:15.5px;letter-spacing:-.2px}
+.hl .tm{font-variant-numeric:tabular-nums;font-weight:700;color:var(--acc2);cursor:pointer;border-radius:5px;padding:0 3px}
+.hl .tm:hover{background:var(--accbg)}
+.hl .row{margin-top:7px;color:var(--ink2);font-size:13.5px}
+.hl .row b{color:var(--muted);font-weight:650;font-size:12px;margin-right:8px;display:inline-block;min-width:50px}
+.hl blockquote{margin:9px 0 0;padding:3px 12px;border-left:3px solid var(--line2);color:var(--muted);font-size:13px}
+.scorebar{display:inline-flex;gap:2px;align-items:center}
+.scorebar i{width:6px;height:12px;border-radius:2px;background:var(--s3)}
+.scorebar i.f{background:var(--warn)}
+.scorebar span{margin-left:6px;font-weight:700;font-size:12.5px;color:var(--warn)}
+.hl .foot{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.hl.kept{border-color:rgba(74,222,128,.55);box-shadow:inset 0 0 0 1px rgba(74,222,128,.25)}
+.hl.skipped{opacity:.45}
+.hl.skipped:hover{opacity:.8}
+.hl.cur{box-shadow:0 0 0 2px var(--acc)}
+.hlgrid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+@media (max-width:1100px){.hlgrid{grid-template-columns:1fr}}
+.pv{aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;position:relative;display:grid;place-items:center;cursor:pointer;border:1px solid var(--line)}
+.pv video{width:100%;height:100%;display:block;background:#000}
+.pv .play{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;color:#fff;transition:.15s}
+.pv:hover .play{background:var(--acc);transform:scale(1.06)}
+.pv .play svg{width:22px;height:22px;margin-left:3px}
+.pv .len{position:absolute;right:8px;bottom:8px;font-size:11.5px;background:#000a;padding:1px 7px;border-radius:6px;color:#ddd}
+.pv.none{cursor:default;color:var(--muted);font-size:12.5px;text-align:center;padding:12px;background:var(--bg)}
+.rvbtn{border:1px solid var(--line2);background:var(--s2);border-radius:9px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.rvbtn.k.on{background:rgba(74,222,128,.18);border-color:var(--ok);color:var(--ok)}
+.rvbtn.x.on{background:rgba(248,113,113,.14);border-color:var(--err);color:var(--err)}
+.rvbtn:hover{border-color:#55556e}
+.rvbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.rvbar .stat{font-size:13px;color:var(--muted)}.rvbar .stat b{color:var(--ink);font-size:15px}
+.kbd{font:11.5px ui-monospace,Consolas,monospace;border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:0 5px;color:var(--ink2)}
+.tx{margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px;max-height:300px;overflow:auto;padding:6px 0}
+.tline{display:grid;grid-template-columns:66px 84px 1fr;gap:8px;padding:3px 12px;font-size:13px;align-items:baseline;border-left:3px solid transparent}
+.tline .tt{color:var(--faint);font-variant-numeric:tabular-nums;font-size:12px;cursor:pointer}
+.tline .tt:hover{color:var(--acc2)}
+.tline .sp{font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tline.hit{background:rgba(251,191,36,.08)}
+.tline.cur{background:var(--accbg)}
+.txfull{max-height:calc(100vh - 260px)}
+/* settings */
+.sgrid{display:grid;gap:16px;max-width:900px}
+.sec h3{margin:0 0 4px;font-size:15.5px;letter-spacing:-.2px}
+.sec .desc{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.fld{display:grid;grid-template-columns:190px 1fr;gap:14px;align-items:start;padding:9px 0}
+.fld>label{color:var(--ink2);font-weight:600;font-size:13px;padding-top:7px}
+.fld .hint{color:var(--faint);font-size:12px;margin-top:5px}
+.fld .inp,.fld select,.fld textarea{width:100%}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+textarea.inp{resize:vertical;min-height:90px;line-height:1.6}
+.row2{display:flex;gap:8px}
+.tog{position:relative;width:40px;height:22px;flex:none;margin-top:5px}
+.tog input{opacity:0;width:0;height:0}
+.tog span{position:absolute;inset:0;background:var(--s3);border-radius:99px;cursor:pointer;transition:.2s}
+.tog span::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.tog input:checked+span{background:var(--acc)}.tog input:checked+span::after{left:21px}
+.trk{display:grid;grid-template-columns:84px 1fr 1fr 34px;gap:8px;align-items:center;margin-bottom:8px}
+.trk-h{font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px;font-weight:650}
+.samples{display:grid;gap:10px;margin-bottom:18px}
+.smp{display:grid;grid-template-columns:70px 1fr 250px 170px;gap:14px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.smp audio{width:100%;height:32px}
+.smp .lvl{height:6px;background:var(--s3);border-radius:9px;overflow:hidden;margin-top:6px}
+.smp .lvl i{display:block;height:100%;background:var(--ok)}
+.savebar{position:sticky;bottom:0;margin-top:18px;padding:14px 0;background:linear-gradient(transparent,var(--bg) 35%);display:flex;gap:10px;align-items:center}
+#toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:#fff;color:#111;padding:9px 16px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.err{background:var(--err);color:#fff}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:40;backdrop-filter:blur(3px)}
+.modal{width:min(560px,92vw);max-height:80vh;overflow:auto}
+.modal h3{margin:0 0 12px}
+.chip.focus{background:rgba(251,191,36,.16);color:#fbbf24}
+.fchip.focus.on{background:rgba(251,191,36,.18);border-color:#fbbf24;color:#fbbf24}
+.tline.chat{border-left-color:rgba(56,189,248,.45)}.tline.chat .sp{color:#38bdf8}.tline.chat .cx{color:var(--ink2);opacity:.9}.tline.chat .cx b{color:#7dd3fc;font-weight:650;margin-right:6px}
+.fprow{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:grid;gap:8px}
+.fprow .r1{display:grid;grid-template-columns:200px 1fr 34px;gap:8px;align-items:center}
+.fcwho{max-height:150px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:12.5px;margin-top:8px}
+.fcwho div{display:flex;gap:8px;padding:2px 0}.fcwho span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--muted)}
+.pick-item{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:9px;cursor:pointer}
+.pick-item:hover{background:var(--s2)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg></div>
+      <div>SkyEye<small>highlight finder</small></div></div>
+    <nav class="nav">
+      <button data-v="recordings" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg>Recordings</button>
+      <button data-v="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Jobs<span class="badge" id="jobBadge" hidden></span></button>
+      <button data-v="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg>Reports</button>
+      <button data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+    </nav>
+    <div class="side-foot">
+      <div><span class="dot" id="dKey"></span><span id="dKeyLbl">Claude</span></div>
+      <div><span class="dot" id="dDrive"></span>Google Drive</div>
+      <div class="small" style="color:var(--faint);margin-top:4px" id="ver"></div>
+    </div>
+  </aside>
+  <main>
+    <section class="view on" id="v-recordings"></section>
+    <section class="view" id="v-jobs"></section>
+    <section class="view" id="v-reports"></section>
+    <section class="view" id="v-settings"></section>
+  </main>
+</div>
+<div id="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ------------------------------------------------------------ helpers */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path,body){
+  const o=body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-VS':'1'},body:JSON.stringify(body)};
+  let r; try{r=await fetch(path,o)}catch(e){setOffline(true);throw new Error('SkyEye isn’t running')}
+  setOffline(false); let j; try{j=await r.json()}catch(e){j={error:'Bad response ('+r.status+')'}}
+  if(!r.ok||j.error) throw new Error(j.error||r.statusText); return j;
+}
+const pad=n=>String(n).padStart(2,'0');
+const fmt=t=>{t=Math.max(0,Math.round(t||0));return `${Math.floor(t/3600)}:${pad(Math.floor(t%3600/60))}:${pad(t%60)}`};
+const fmtDur=t=>{t=Math.round(t||0);const h=Math.floor(t/3600),m=Math.round(t%3600/60);return h?`${h}h ${pad(m)}m`:`${m}m`};
+const fmtSize=b=>b>=1e9?(b/1e9).toFixed(1)+' GB':(b/1e6).toFixed(0)+' MB';
+const fmtDate=s=>{if(!s)return'';const d=new Date(s);if(isNaN(d))return s.slice(0,10);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+function setOffline(on){
+  if(!!S.offline===on)return; S.offline=on; let el=$('#offline');
+  if(on&&!el){el=document.createElement('div');el.id='offline';el.className='modal-bg';
+    el.innerHTML=`<div class="card modal" style="text-align:center"><div style="font-size:34px">💤</div><h3>SkyEye stopped running</h3><p class="muted">This window lost its connection to SkyEye. Close this window and open SkyEye again from the desktop shortcut. Your results are all saved.</p><p class="small muted">Trying to reconnect…</p></div>`;document.body.appendChild(el)}
+  if(!on&&el){el.remove();refreshLists()}
+}
+function toast(msg,err){const t=$('#toast');t.textContent=msg;t.className=err?'show err':'show';clearTimeout(t._h);t._h=setTimeout(()=>t.className='',2600)}
+async function copy(text,msg){try{await navigator.clipboard.writeText(text);toast(msg||'Copied')}catch(e){toast('Copy failed',1)}}
+const ICON={
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>',
+  wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h0"/></svg>',
+  text:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg>',
+  doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  folder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+  cloud:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/></svg>',
+  pc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+};
+const CAT={'웃긴 장면':'var(--c-funny)','리액션':'var(--c-react)','토크/썰':'var(--c-talk)','후원 소통':'var(--c-dono)','게임 플레이':'var(--c-game)','합방/디코 케미':'var(--c-collab)','감동/진지':'var(--c-emo)','기타':'var(--c-etc)'};
+const CATHEX={'웃긴 장면':'#fbbf24','리액션':'#f87171','토크/썰':'#60a5fa','후원 소통':'#f472b6','게임 플레이':'#34d399','합방/디코 케미':'#a78bfa','감동/진지':'#22d3ee','기타':'#94a3b8'};
+const ROLECOL={mic:'#b3a8ff',discord:'#60a5fa',donation:'#f472b6',game:'#34d399'};
+const STAGE={discord:['Discord',ICON.ext],previews:['Preview clips',ICON.play],fetch:['Find videos',ICON.cloud],subtitles:['Read subtitles',ICON.text],download:['Download',ICON.down],extract:['Extract audio',ICON.wave],transcribe:['Transcribe',ICON.text],signals:['Audio signals',ICON.bolt],claude:['Claude picks',ICON.star],report:['Report',ICON.doc]};
+const WEIGHT={discord:.05,previews:.06,fetch:.08,subtitles:.5,download:.22,extract:.1,transcribe:.42,signals:.05,claude:.19,report:.02};
+const STATUS_LABEL={new:'New',transcribed:'Transcribed',done:'Analyzed'};
+
+/* -------------------------------------------------------------- state */
+const S={view:'recordings',recTab:'drive',drive:null,local:null,sel:new Set(),jobs:[],setup:{},
+  results:null,report:null,rf:{fmt:'all',cats:new Set(),min:1,sort:'time',rv:'all'},rtab:'highlights',cur:0,
+  cfg:null,dirty:false,jobSig:'',logOpen:{},lastDoneCount:0};
+
+function show(v){
+  S.view=v;$$('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  if(v==='recordings'){renderRecordings();if(!(S.recTab==='drive'?S.drive:S.local))loadRec(false)} if(v==='jobs'){S.jobSig='';renderJobs()}
+  if(v==='reports'){S.report?renderReport():loadResults()} if(v==='settings')loadSettings();
+  $('main').scrollTop=0;
+}
+$$('.nav button').forEach(b=>b.onclick=()=>{if(b.dataset.v==='reports'&&S.view==='reports'){S.report=null;loadResults()}else show(b.dataset.v)});
+
+/* -------------------------------------------------------------- polling */
+function claudeReady(){const s=S.setup||{};if(s.backend==='api')return !!s.api_key;return !!(s.claude&&s.claude.logged_in)}
+async function poll(){
+  try{
+    const st=await api('/api/state'); S.setup=st.setup; S.jobs=st.jobs;
+    $('#ver').textContent='v'+st.version;
+    $('#dKey').className='dot '+(claudeReady()?'ok':'bad');
+    $('#dKeyLbl').textContent=st.setup.backend==='api'?'Claude (API key)':'Claude (subscription)';
+    $('#dDrive').className='dot '+(st.setup.drive?'ok':'bad');
+    const active=S.jobs.filter(j=>j.status==='running'||j.status==='queued').length;
+    const b=$('#jobBadge'); b.hidden=!active; b.textContent=active;
+    const doneCount=S.jobs.filter(j=>['done','failed','cancelled'].includes(j.status)).length;
+    if(doneCount!==S.lastDoneCount){
+      const newly=S.jobs.filter(j=>j.status==='done'&&j.finished&&Date.now()/1000-j.finished<3);
+      newly.forEach(j=>toast(j.kind==='tracks'?`Tracks ready: ${j.name}`:`Finished: ${j.name}`));
+      S.lastDoneCount=doneCount; refreshLists();
+    }
+    if(S.view==='jobs')renderJobs();
+    if(S.view==='recordings')updateRecordingBusy();
+    if(S.view==='settings')updateDriveLogin();
+  }catch(e){}
+}
+setInterval(poll,1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
+window.addEventListener('focus',()=>poll());
+function refreshLists(){
+  if(S.view==='recordings')loadRec(false);
+  if(S.view==='reports'&&!S.report)loadResults();
+  if(S.view==='settings'){if(!S.dirty&&S.jobs.some(j=>j.kind==='learn'&&j.status==='done'&&Date.now()/1000-j.finished<5))loadSettings();else renderSamples()}
+}
+
+/* --------------------------------------------------------- recordings */
+function jobFor(name){return S.jobs.find(j=>j.name===name&&(j.status==='running'||j.status==='queued'))}
+async function loadRec(refresh){
+  try{
+    if(S.recTab==='drive'){S.driveLoading=true;renderRecordings();S.drive=await api('/api/drive'+(refresh?'?refresh=1':''));}
+    else S.local=await api('/api/local');
+  }catch(e){if(S.offline){S.driveLoading=false;return}if(S.recTab==='drive')S.drive={error:e.message,items:[]};else toast(e.message,1)}
+  S.driveLoading=false; renderRecordings();
+}
+function renderRecordings(){
+  const el=$('#v-recordings');
+  const data=S.recTab==='drive'?S.drive:S.local;
+  const items=(data&&data.items)||[];
+  const keyOf=it=>S.recTab==='drive'?it.name:it.path;
+  let banner='';
+  const cl=(S.setup||{}).claude||{};
+  if(S.setup&&S.setup.backend&&!claudeReady()&&!(S.setup.backend!=='api'&&cl.installed===null))banner+=`<div class="banner"><span style="font-size:20px">✨</span><div class="grow"><b>Set up Claude</b><div class="small muted">${S.setup.backend==='api'?'Add your API key in Settings.':cl.installed?'Log in to Claude Code with your Claude account (Settings → Claude).':'Install Claude Code so SkyEye can use your Claude subscription (Settings → Claude).'}</div></div><button class="btn pri" onclick="show('settings')">Open Settings</button></div>`;
+  const nsel=[...S.sel].filter(k=>items.some(i=>keyOf(i)===k)).length;
+  let body='';
+  if(S.recTab==='drive'){
+    if(S.driveLoading&&!items.length) body=`<div class="card empty"><div class="spin" style="margin:0 auto 12px;width:22px;height:22px"></div>Reading your Google Drive folder…</div>`;
+    else if(data&&data.connected===false) body=`<div class="card empty"><div class="big">☁️</div><h3>Connect Google Drive</h3><p>Log in once and SkyEye can pull recordings straight from your Drive folder.</p><button class="btn pri" onclick="driveLogin()">Connect Google Drive</button><p class="small" id="dlMsg">${esc(S.setup.drive_message||'')}</p></div>`;
+    else if(data&&data.error) body=`<div class="card empty"><div class="big">⚠️</div><h3>Couldn't read the Drive folder</h3><p class="small" style="white-space:pre-wrap;max-width:640px;margin:0 auto 14px">${esc(data.error)}</p><button class="btn" onclick="loadRec(true)">Try again</button> <button class="btn pri" onclick="driveLogin()">Log in again</button></div>`;
+  }
+  if(!body && !items.length && data) body=S.recTab==='drive'
+    ?`<div class="card empty"><div class="big">📭</div><h3>No videos in the Drive folder</h3><p>Upload a recording to your Drive folder and refresh.</p></div>`
+    :`<div class="card empty"><div class="big">🎞️</div><h3>No recordings on this PC yet</h3><p>Add recording files, or choose a folder (like your OBS output folder) in Settings.</p><button class="btn pri" onclick="pickLocal()">Add recordings…</button></div>`;
+  if(!body && items.length){
+    body=`<div class="card" style="padding:8px 8px 4px"><table class="tbl"><thead><tr><th style="width:34px"></th><th>Recording</th><th>Date</th><th>Size</th><th>Status</th><th></th></tr></thead><tbody>`+
+    items.map(it=>{const k=keyOf(it);const j=jobFor(it.name);
+      const chip=j?`<span class="chip busy" data-busy="${esc(it.name)}"><span class="spin" style="width:10px;height:10px;border-width:2px"></span>${j.status==='running'?'Working':'In queue'}</span>`
+        :`<span class="chip ${it.status}"><span class="d"></span>${STATUS_LABEL[it.status]}</span>`;
+      const main=it.status==='done'?`<button class="btn sm" onclick="openReport('${it.result_id}')">${ICON.star} Report</button>`
+        :`<button class="btn sm pri" ${j?'disabled':''} onclick="queue([${esc(JSON.stringify(k))}],'full')">${it.status==='transcribed'?'Finish':'Analyze'}</button>`;
+      return `<tr><td><input type="checkbox" class="chk" data-k="${esc(k)}" ${S.sel.has(k)?'checked':''}></td>
+        <td class="name">${esc(it.name)}${it.downloaded?' <span class="chip" title="Already downloaded">⬇</span>':''}</td>
+        <td class="num">${esc(fmtDate(it.date))}</td><td class="num">${fmtSize(it.size)}</td><td>${chip}</td>
+        <td><div class="acts">${main}<button class="btn sm ghost" title="Listen to each audio track" onclick="queueTracks(${esc(JSON.stringify(k))})">${ICON.wave} Tracks</button>
+        ${S.recTab==='local'?`<button class="btn sm ghost" title="Remove from list" onclick="removeLocal(${esc(JSON.stringify(k))})">${ICON.x}</button>`:''}</div></td></tr>`}).join('')+
+    `</tbody></table></div>`;
+  }
+  const newCount=items.filter(i=>i.status!=='done').length;
+  el.innerHTML=`${banner}<div class="vh"><h1>Recordings</h1>
+    <div class="seg"><button class="${S.recTab==='drive'?'on':''}" onclick="setRecTab('drive')">${ICON.cloud.replace('<svg','<svg width=15 height=15')} Google Drive</button><button class="${S.recTab==='local'?'on':''}" onclick="setRecTab('local')">${ICON.pc.replace('<svg','<svg width=15 height=15')} This PC</button></div>
+    <div class="grow"></div>
+    ${S.recTab==='local'?`<button class="btn" onclick="pickLocal()">＋ Add recordings…</button>`:`<button class="btn ghost" onclick="loadRec(true)">${ICON.refresh} Refresh</button>`}
+    ${newCount?`<button class="btn" onclick="selectNew()">Select new (${newCount})</button>`:''}
+    <button class="btn pri" ${nsel?'':'disabled'} onclick="queue([...S.sel],'full')">Analyze selected${nsel?` (${nsel})`:''}</button></div>
+    ${S.recTab==='local'&&S.local&&S.local.folder?`<div class="small muted" style="margin:-8px 0 14px">Folder: ${esc(S.local.folder)}</div>`:''}
+    ${body}
+    <p class="small muted" style="margin-top:14px">${S.recTab==='drive'?'SkyEye downloads a temporary copy to this PC for processing. Your recordings on Google Drive are never deleted or changed, and nothing is added to your Drive.':'Results are saved in a “…_scout” folder next to each recording.'}</p>`;
+  $$('.chk',el).forEach(c=>c.onchange=()=>{c.checked?S.sel.add(c.dataset.k):S.sel.delete(c.dataset.k);renderRecordings()});
+}
+function updateRecordingBusy(){
+  const data=S.recTab==='drive'?S.drive:S.local; if(!data||!data.items)return;
+  const sig=data.items.map(i=>i.name+(jobFor(i.name)?.status||'')).join('|');
+  if(sig!==S._recSig){S._recSig=sig;renderRecordings()}
+}
+function setRecTab(t){S.recTab=t;S.sel.clear();renderRecordings();loadRec(false)}
+function selectNew(){const data=S.recTab==='drive'?S.drive:S.local;data.items.filter(i=>i.status!=='done').forEach(i=>S.sel.add(S.recTab==='drive'?i.name:i.path));renderRecordings()}
+async function queue(keys,mode,kind){
+  if(!keys.length)return;
+  const body=S.recTab==='drive'?{source:'drive',names:keys,mode,kind}:{source:'local',paths:keys,mode,kind};
+  if(!kind||kind==='analyze'){            // ask what to look for (focus) before anything is queued
+    const names=keys.map(k=>S.recTab==='drive'?k:String(k).split(/[\\/]/).pop());
+    const f=await askFocus({title:`Analyze ${names.length>1?names.length+' recordings':'recording'}`,names,okLabel:'Analyze'});
+    if(!f)return; body.focus=f;
+  }
+  try{const r=await api('/api/jobs',body);toast(`Queued ${r.jobs.length} job${r.jobs.length>1?'s':''}`);S.sel.clear();show('jobs')}catch(e){toast(e.message,1)}
+}
+function queueTracks(k){queue([k],'full','tracks')}
+async function pickLocal(){try{const r=await api('/api/pick',{kind:'files'});if(r.paths.length){toast(`Added ${r.paths.length}`);loadRec(false)}}catch(e){toast(e.message,1)}}
+async function removeLocal(p){await api('/api/local/remove',{path:p});loadRec(false)}
+async function driveLogin(){try{await api('/api/drive/login',{});toast('Opening Google login in your browser…')}catch(e){toast(e.message,1)}}
+
+/* --------------------------------------------------------------- jobs */
+function overall(j){
+  const st=j.stages||[];const tot=st.reduce((a,s)=>a+(WEIGHT[s]||.05),0)||1;
+  if(j.status==='done')return 1; const i=st.indexOf(j.stage); if(i<0)return 0;
+  let v=0; for(let k=0;k<i;k++)v+=WEIGHT[st[k]]||.05; v+=(WEIGHT[j.stage]||.05)*(j.frac||0); return Math.min(1,v/tot);
+}
+function stepsHTML(j){
+  const i=j.stages.indexOf(j.stage);
+  return `<div class="steps">`+j.stages.map((s,k)=>{const [lab,ic]=STAGE[s]||[s,''];
+    const cls=j.status==='done'||k<i?'done':(k===i&&j.status==='running'?'cur':'');
+    return `<div class="step ${cls}"><div class="ic">${cls==='done'?ICON.check:ic}</div>${j.kind==='tracks'&&s==='extract'?'Export samples':j.kind==='learn'&&s==='claude'?'Claude learns':lab}</div>`}).join('')+`</div>`;
+}
+const elapsed=j=>j.started?fmt(((j.finished||Date.now()/1000)-j.started)):'';
+function renderJobs(){
+  const el=$('#v-jobs'); const jobs=S.jobs;
+  const sig=jobs.map(j=>j.id+j.status+j.stage+(j.prefetch?Math.round((j.prefetch.pct||0)*20)+String(j.prefetch.done):'')).join('|');
+  const cur=jobs.find(j=>j.status==='running');
+  if(sig===S.jobSig&&el.innerHTML){ // live update only
+    if(cur){const p=overall(cur);const b=$('#curBar');if(b)b.style.width=(p*100).toFixed(1)+'%';
+      const pc=$('#curPct');if(pc)pc.textContent=Math.floor(p*100)+'%';const d=$('#curDetail');if(d)d.textContent=cur.detail||'';
+      const e=$('#curEl');if(e)e.textContent=elapsed(cur);const lb=$('#curLog');if(lb){const at=lb.scrollTop+lb.clientHeight>=lb.scrollHeight-20;lb.textContent=cur.log.join('\n');if(at)lb.scrollTop=lb.scrollHeight}}
+    return;
+  }
+  S.jobSig=sig;
+  if(!jobs.length){el.innerHTML=`<div class="vh"><h1>Jobs</h1></div><div class="card empty"><div class="big">✨</div><h3>Nothing running</h3><p>Pick recordings on the Recordings page to start.</p><button class="btn pri" onclick="show('recordings')">Go to Recordings</button></div>`;return}
+  let html=`<div class="vh"><h1>Jobs</h1><div class="grow"></div><button class="btn ghost" onclick="clearJobs()">Clear finished</button></div>`;
+  if(cur){const p=overall(cur);
+    html+=`<div class="card job-now"><div class="job-title"><div class="spin"></div><h2>${esc(cur.name)}</h2><span class="chip">${cur.kind==='learn'?'Channel study':cur.kind==='discord'?'Discord post':cur.kind==='previews'?'Preview clips':cur.kind==='tracks'?'Track check':cur.mode==='redo_ai'?'Re-run Claude':'Full analysis'}</span><span class="chip">${cur.source==='drive'?'Drive':cur.source==='youtube'?'YouTube':cur.source==='discord'?'Discord':'This PC'}</span>${cur.focus&&cur.focus.text?`<span class="chip focus" title="${esc(cur.focus.text)}">🎯 ${esc(cur.focus.preset||'Custom focus')}</span>`:''}<div class="grow"></div>
+      <button class="btn danger sm" onclick="cancelJob('${cur.id}')" ${cur.cancelling?'disabled':''}>${cur.cancelling?'Cancelling…':'Cancel'}</button></div>
+      ${stepsHTML(cur)}<div class="bar"><i id="curBar" style="width:${(p*100).toFixed(1)}%"></i></div>
+      <div class="prog-row"><div><b id="curPct">${Math.floor(p*100)}%</b> <span class="muted" id="curDetail">${esc(cur.detail||'')}</span></div><span class="muted small">elapsed <span id="curEl">${elapsed(cur)}</span></span></div>
+      <details class="log" ${S.logOpen[cur.id]?'open':''} ontoggle="S.logOpen['${cur.id}']=this.open"><summary>Log</summary><pre class="logbox" id="curLog">${esc(cur.log.join('\n'))}</pre></details></div>`;
+  }
+  const rest=jobs.filter(j=>j!==cur).slice().reverse();
+  if(rest.length){
+    html+=`<div class="card qlist" style="margin-top:16px;padding:8px 20px">`+rest.map(j=>{
+      const icon=j.status==='queued'?'<span class="muted">⏳</span>':j.status==='done'?`<span style="color:var(--ok)">${ICON.check.replace('<svg','<svg width=16 height=16')}</span>`:j.status==='cancelled'?'<span class="muted">⊘</span>':'<span style="color:var(--err)">✕</span>';
+      let right='';
+      if(j.status==='queued'){const pf=j.prefetch;const pfTxt=pf&&!pf.skipped?(pf.done?'downloaded ahead ✓':pf.error?'':`downloading ahead ${Math.round((pf.pct||0)*100)}%`):'';
+        right=`<span class="muted small">${pfTxt||'queued'}</span><button class="btn sm ghost" onclick="cancelJob('${j.id}')">Remove</button>`}
+      else if(j.status==='done'&&j.kind==='previews'&&j.result_id)right=`<button class="btn sm" onclick="openReport('${j.result_id}')">${ICON.star} Review</button>`;
+      else if(j.status==='done'&&j.kind==='learn')right=`<button class="btn sm pri" onclick="gotoProfile()">${ICON.star} View style profile</button>`;
+      else if(j.status==='done'&&j.kind==='tracks')right=`<button class="btn sm pri" onclick="show('settings');setTimeout(()=>$('#samplesAnchor')?.scrollIntoView({behavior:'smooth'}),200)">${ICON.wave} Set up tracks</button>`;
+      else if(j.status==='done'&&j.result_id)right=`<button class="btn sm" onclick="openReport('${j.result_id}')">${ICON.star} Open report</button>`;
+      else if(j.status==='failed')right=`<span class="small" style="color:var(--err);max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(j.error)}">${esc(j.error||'failed')}</span>`;
+      if(j.status!=='queued')right+=`<button class="btn sm ghost" onclick="showLog('${j.id}')">Log</button>`;
+      return `<div class="qi"><div class="st">${icon}</div><div class="nm">${esc(j.name)} <span class="muted small">· ${j.kind==='learn'?'channel study':j.kind==='discord'?'discord post':j.kind==='previews'?'preview clips':j.kind==='tracks'?'track check':j.mode==='redo_ai'?'re-run Claude':'analysis'}${j.focus&&j.focus.text?' · 🎯 '+esc(j.focus.preset||'custom focus'):''}${j.finished?' · '+elapsed(j):''}</span></div>${right}</div>`}).join('')+`</div>`;
+  }
+  el.innerHTML=html;
+  const lb=$('#curLog'); if(lb)lb.scrollTop=lb.scrollHeight;
+}
+async function cancelJob(id){await api('/api/jobs/cancel',{id});S.jobSig=''}
+async function clearJobs(){await api('/api/jobs/clear',{});S.jobSig=''}
+async function showLog(id){const j=await api('/api/job?id='+id);modal(`<h3>${esc(j.name)}</h3>${j.error?`<p style="color:var(--err)">${esc(j.error)}</p>`:''}<pre class="logbox" style="max-height:55vh">${esc(j.log.join('\n'))}</pre><div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeModal()">Close</button></div>`)}
+function modal(html){$('#modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="card modal">${html}</div></div>`}
+function closeModal(){if(S._ask){const r=S._ask;S._ask=null;r(null)}$('#modalRoot').innerHTML=''}
+/* focus dialog: what should Claude look for in these streams? resolves {preset,text} or null (cancelled) */
+async function askFocus({title,names,okLabel,pre,note}){
+  let cfg; try{cfg=await api('/api/config')}catch(e){toast(e.message,1);return null}
+  const presets=cfg.focus_presets||[];
+  let sel='__auto__',extra='';
+  if(pre&&(pre.text||pre.preset)){
+    if(pre.preset&&presets.some(p=>p.name===pre.preset)){sel=pre.preset;extra=pre.extra||''}
+    else{sel='';extra=pre.text||''}
+  }
+  return new Promise(resolve=>{
+    S._ask=resolve;
+    modal(`<h3>${esc(title)}</h3>
+      ${note?`<div class="small muted" style="margin:-6px 0 12px">${note}</div>`:''}
+      <div class="fld" style="grid-template-columns:130px 1fr;padding:4px 0"><label>Focus</label><div><select class="inp" id="fcPreset">
+        <option value="__auto__" ${sel==='__auto__'?'selected':''}>Auto (match by title)</option><option value="" ${sel===''?'selected':''}>None</option>
+        ${presets.map(p=>`<option value="${esc(p.name)}" ${sel===p.name?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+        <div class="hint" id="fcHint"></div></div></div>
+      <div class="fld" style="grid-template-columns:130px 1fr;padding:4px 0"><label>Extra instructions</label><div><textarea class="inp" id="fcExtra" rows="3" style="min-height:70px" placeholder="Optional — e.g. 추락하는 장면과 그 리액션을 전부 찾아줘">${esc(extra)}</textarea>
+        <div class="hint">Added on top of the focus above (or used alone). Claude treats it as top priority and finds every match, even if it isn’t funny. Leave both empty for a normal analysis.</div></div></div>
+      <div class="small muted" style="margin-top:6px">What Claude will look for:</div><div class="fcwho" id="fcWho"></div>
+      <div style="text-align:right;margin-top:14px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn pri" id="fcOk">${esc(okLabel||'OK')}</button></div>`);
+    const val=()=>({preset:$('#fcPreset').value||null,text:$('#fcExtra').value.trim()});
+    let tm=null;
+    const refresh=async()=>{
+      try{const r=await api('/api/focus/preview',{names,focus:val()});
+        const rows=r.items.slice(0,40).map(i=>`<div><span title="${esc(i.name)}">${esc(i.name)}</span>${i.text?`<span class="chip focus" title="${esc(i.text)}">🎯 ${esc(i.preset||'Custom')}</span>`:'<span class="muted">no focus</span>'}</div>`).join('');
+        $('#fcWho').innerHTML=rows+(r.items.length>40?`<div class="muted">… and ${r.items.length-40} more</div>`:'');
+        const p=presets.find(x=>x.name===$('#fcPreset').value);
+        $('#fcHint').textContent=p&&p.text?p.text:($('#fcPreset').value==='__auto__'?'Picks the first preset whose keywords appear in the file name (Settings → Focus presets).':'');
+      }catch(e){}
+    };
+    $('#fcPreset').onchange=refresh; $('#fcExtra').oninput=()=>{clearTimeout(tm);tm=setTimeout(refresh,250)};
+    $('#fcOk').onclick=()=>{const v=val();S._ask=null;closeModal();resolve(v)};
+    refresh();
+  });
+}
+
+/* ------------------------------------------------------------ reports */
+async function loadResults(){
+  const el=$('#v-reports');
+  if(!S.results)el.innerHTML=`<div class="vh"><h1>Reports</h1></div><div class="card empty"><div class="spin" style="margin:0 auto"></div></div>`;
+  try{S.results=await api('/api/results')}catch(e){toast(e.message,1);S.results=[]}
+  if(S.view==='reports'&&!S.report)renderResults();
+}
+function renderResults(){
+  const el=$('#v-reports'); const rs=S.results||[];
+  if(!rs.length){el.innerHTML=`<div class="vh"><h1>Reports</h1></div><div class="card empty"><div class="big">⭐</div><h3>No reports yet</h3><p>Analyze a recording and its highlight report will show up here.</p></div>`;return}
+  el.innerHTML=`<div class="vh"><h1>Reports</h1><span class="sub">${rs.length} stream${rs.length>1?'s':''}</span></div><div class="rgrid">`+rs.map(r=>`
+    <div class="card rcard" onclick="openReport('${r.id}')">
+      <h3>${esc(r.name)}</h3>
+      <div class="stats"><span><b>${fmtDur(r.duration)}</b> long</span><span><b>${r.count}</b> picks</span><span><b>${r.shorts}</b> shorts</span>${r.chat_count?`<span>💬 <b>${r.chat_count}</b></span>`:''}</div>
+      ${r.focus?`<div><span class="chip focus" title="Claude was told to look for this">🎯 ${esc(r.focus)}${r.focus_count?` · ${r.focus_count} found`:''}</span></div>`:''}
+      ${r.analyzed?`<div class="tops">${r.top.map(t=>`<div><span class="t">${fmt(t.s)}</span><span class="x">${esc(t.title)}</span><span class="score-pill">★ ${t.score}</span></div>`).join('')}</div>`:`<div class="small muted">Transcribed — Claude step not run yet</div>`}
+      <div class="small" style="color:var(--faint);margin-top:auto">${r.generated?'Analyzed '+esc(r.generated):''}</div>
+    </div>`).join('')+`</div>`;
+}
+async function openReport(id){
+  show('reports'); const el=$('#v-reports');
+  el.innerHTML=`<div class="card empty"><div class="spin" style="margin:0 auto"></div></div>`;
+  try{S.report=await api('/api/result?id='+encodeURIComponent(id));S.rtab='highlights';S.rf={fmt:'all',cats:new Set(),min:1,sort:'time',rv:'all',focus:false};S.cur=0;renderReport()}
+  catch(e){toast(e.message,1);S.report=null;loadResults()}
+}
+function ytLink(R,sec){
+  const u=(R.meta.youtube_url||'').trim(); const m=u.match(/(?:v=|youtu\.be\/|\/live\/|\/shorts\/)([\w-]{11})/); if(!m)return null;
+  return `https://youtu.be/${m[1]}?t=${Math.max(0,Math.floor(sec+(+R.meta.youtube_offset_seconds||0)))}`;
+}
+function renderReport(){
+  const R=S.report, el=$('#v-reports'), a=R.analysis||{}, hs=R.highlights||[];
+  const dur=R.meta.duration||Math.max(0,...hs.map(h=>h.e));
+  const cats=[...new Set(hs.map(h=>h.category))];
+  el.innerHTML=`<div class="back" onclick="S.report=null;loadResults()">← All reports</div>
+  <div class="rhead" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+    <div class="grow" style="min-width:300px"><h1>${esc((R.meta.vod||'').replace(/\.[^.]+$/,''))}</h1>
+      <div class="meta"><span>${fmtDur(dur)} stream</span><span>${hs.length} picks</span><span>${hs.filter(h=>h.format!=='본편').length} shorts ideas</span>${R.meta.generated?`<span>analyzed ${esc(R.meta.generated)}</span>`:''}${a.model?`<span>${esc(a.model)}</span>`:''}${R.meta.focus&&R.meta.focus.text?`<span class="chip focus" title="${esc(R.meta.focus.text)}">🎯 Focus: ${esc(R.meta.focus.preset||'Custom')}</span>`:''}${R.chat?`<span title="Viewer chat saved by Arkbird (delay ${R.chat.delay}s)">💬 ${R.chat.count} chat</span>`:''}</div></div>
+    <div class="row2" style="flex-wrap:wrap">
+      ${R.editor_page?`<a class="btn" href="${esc(R.editor_page)}" target="_blank" title="The page your editors open (sent with “Send to editors”)">${ICON.ext} Editor page</a>`:''}
+      <button class="btn" onclick="openFile('html')">${ICON.ext} HTML</button>
+      <button class="btn" onclick="openFile('folder')">${ICON.folder} Folder</button>
+      <button class="btn" onclick="redo()">${ICON.refresh} Re-run Claude</button>
+    </div></div>
+  ${R.meta.warning?`<div class="banner" style="margin-top:14px;border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08)"><span style="font-size:20px">⚠️</span><div class="grow"><b>Track settings look wrong</b><div class="small muted">${esc(R.meta.warning)}</div></div><button class="btn" onclick="show('settings');setTimeout(()=>$('#trkRows')?.scrollIntoView({behavior:'smooth',block:'center'}),300)">Audio tracks</button></div>`:''}
+  ${R.meta.timings?`<div class="small muted" style="margin-top:10px">⏱ ${Object.entries(R.meta.timings).map(([k,v])=>`${({download:'download',extract:'extract audio',transcribe:'transcribe',signals:'signals',claude:'Claude',previews:'previews'})[k]||k} ${v>=60?(v/60).toFixed(1)+' min':Math.round(v)+'s'}`).join(' · ')}</div>`:''}
+  <div class="yt"><span class="small muted" style="width:120px">YouTube archive</span><input class="inp" id="ytUrl" style="flex:1;min-width:260px" placeholder="https://youtu.be/… (makes timestamps clickable)" value="${esc(R.meta.youtube_url||'')}">
+    <span class="small muted">offset</span><input class="inp" id="ytOff" style="width:80px" type="number" step="1" value="${+R.meta.youtube_offset_seconds||0}" title="Seconds to add to local time to get YouTube time"><span class="small muted">s</span>
+    <button class="btn" onclick="saveYt()">Save</button></div>
+  ${a.stream_summary?`<div class="card" style="margin-top:18px"><div class="small muted" style="font-weight:650;margin-bottom:6px">STREAM SUMMARY</div><div class="summary">${esc(a.stream_summary)}</div></div>`:''}
+  <div class="card" style="margin-top:14px"><div style="display:flex;align-items:center;gap:10px"><div class="small muted" style="font-weight:650">TIMELINE</div><div class="grow"></div><span class="small muted">Click a block to jump to it · click anywhere else to read the transcript there</span></div>
+    <div class="tl-wrap" id="tlWrap">${timelineSVG(R,dur)}<div class="tl-tip" id="tlTip"></div></div>
+    <div class="legend">${cats.map(c=>`<span><i style="background:${CATHEX[c]||'#94a3b8'}"></i>${esc(c)}</span>`).join('')}<span><i style="background:#b3a8ff;opacity:.5"></i>Your voice level</span><span><i style="background:#34d399;opacity:.6"></i>Game level</span><span>⚡ loud reaction</span><span style="color:#f472b6">● donation</span>${(R.meta.markers||[]).length?'<span style="color:#fbbf24">★ your mark</span>':''}${R.chat?'<span><i style="background:#38bdf8;opacity:.7"></i>Chat</span>':''}</div></div>
+  <div class="tabs"><button data-t="highlights" class="${S.rtab==='highlights'?'on':''}">Picks (${hs.length})</button><button data-t="transcript" class="${S.rtab==='transcript'?'on':''}">Transcript</button><button data-t="ideas" class="${S.rtab==='ideas'?'on':''}">Ideas & chapters</button></div>
+  <div id="rtab"></div>`;
+  $$('.tabs button',el).forEach(b=>b.onclick=()=>{S.rtab=b.dataset.t;$$('.tabs button',el).forEach(x=>x.classList.toggle('on',x===b));renderRTab()});
+  bindTimeline(R,dur); renderRTab();
+}
+function timelineSVG(R,dur){
+  const W=1000,H=150,x=t=>(t/dur*W); const sig=R.signals||{}, tr=R.tracks||{};
+  const keyBy=role=>Object.keys(tr).find(k=>tr[k].role===role);
+  const mic=keyBy('mic'), game=keyBy('game'), dono=keyBy('donation');
+  const norm=db=>Math.max(0,Math.min(1,(db+60)/48));
+  const curve=(k,top,h)=>{const c=sig[k]?.curve; if(!c||!c.length)return''; const step=W/Math.max(1,dur/10);
+    let d=`M0 ${top+h}`; c.forEach((v,i)=>{d+=` L${(i*step).toFixed(1)} ${(top+h-norm(v)*h).toFixed(1)}`}); d+=` L${(c.length*step).toFixed(1)} ${top+h} Z`; return d};
+  let s=`<svg viewBox="0 0 ${W} ${H}" id="tlSvg"><rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
+  // grid
+  const stepT=dur>4*3600?3600:dur>3600?1800:dur>1200?600:300;
+  for(let t=0;t<=dur;t+=stepT){s+=`<line x1="${x(t)}" x2="${x(t)}" y1="0" y2="128" stroke="#2a2a3a" stroke-width="1"/><text x="${x(t)+3}" y="146" fill="#5f5f75" font-size="10">${fmt(t).replace(/:00$/,'')}</text>`}
+  if(game)s+=`<path d="${curve(game,6,48)}" fill="#34d399" opacity=".18"/>`;
+  if(mic)s+=`<path d="${curve(mic,6,48)}" fill="#b3a8ff" opacity=".45"/>`;
+  (sig[mic]?.spikes||[]).forEach(p=>{s+=`<path d="M${x(p.t)} 2 l3 6 h-6z" fill="#fbbf24" opacity=".9"/>`});
+  (sig[game]?.spikes||[]).forEach(p=>{s+=`<path d="M${x(p.t)} 2 l3 6 h-6z" fill="#34d399" opacity=".7"/>`});
+  (sig[dono]?.events||[]).forEach(e=>{s+=`<circle cx="${x(e.start)}" cy="60" r="2.6" fill="#f472b6"/>`});
+  (R.meta.markers||[]).forEach(m=>{s+=`<text x="${x(m.t)}" y="68" font-size="13" text-anchor="middle" fill="#fbbf24">★</text><line x1="${x(m.t)}" x2="${x(m.t)}" y1="0" y2="128" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2 3" opacity=".6"/>`});
+  // chat activity (Arkbird): a thin row under the chapters, taller bars = busier chat
+  if(R.chat&&R.chat.bins&&R.chat.bins.length){const mx=Math.max(1,...R.chat.bins),bw=Math.max(1.2,W*R.chat.bin/dur);
+    R.chat.bins.forEach((n,i)=>{if(n)s+=`<rect x="${(i*R.chat.bin/dur*W).toFixed(1)}" y="${(139-9*Math.min(1,n/mx)).toFixed(1)}" width="${bw.toFixed(1)}" height="${(9*Math.min(1,n/mx)).toFixed(1)}" fill="#38bdf8" opacity=".6"/>`});
+    (R.chat.bursts||[]).forEach(([t,n])=>{s+=`<path d="M${x(t)} 129 l3 -4 h-6z" fill="#38bdf8"/>`})}
+  // highlights
+  (R.highlights||[]).forEach(h=>{const w=Math.max(3,x(h.e)-x(h.s));
+    s+=`<rect class="hlr" data-n="${h.n}" x="${x(h.s)}" y="${h.format==='쇼츠'?84:70}" width="${w}" height="${h.format==='쇼츠'?12:26}" rx="2.5" fill="${CATHEX[h.category]||'#94a3b8'}" opacity="${(.45+h.score/20).toFixed(2)}" style="cursor:pointer"/>`});
+  // chapters
+  (R.analysis?.chapters||[]).forEach((c,i)=>{const a=parseT(c.start),b=parseT(c.end);if(a==null||b==null||b<=a)return;const w=x(b)-x(a);
+    s+=`<rect x="${x(a)+.5}" y="104" width="${Math.max(1,w-1)}" height="22" rx="4" fill="${i%2?'#1e1e29':'#262634'}"/>`;
+    const maxc=Math.floor((w-8)/10.5); if(maxc>=2){const t=c.what.length>maxc?c.what.slice(0,maxc-1)+'…':c.what; s+=`<text x="${x(a)+5}" y="119" fill="#8a8aa0" font-size="10.5">${esc(t)}</text>`}});
+  s+=`<line id="tlCursor" x1="0" x2="0" y1="0" y2="128" stroke="#fff" stroke-width="1" opacity="0"/></svg>`;
+  return s;
+}
+function parseT(v){if(v==null)return null;if(typeof v==='number')return v;const p=String(v).replace(/[\[\]]/g,'').split(':').map(Number);if(p.some(isNaN))return null;return p.reduce((a,b)=>a*60+b,0)}
+function bindTimeline(R,dur){
+  const svg=$('#tlSvg'), tip=$('#tlTip'), wrap=$('#tlWrap'), cur=$('#tlCursor'); if(!svg)return;
+  const tAt=ev=>{const r=svg.getBoundingClientRect();return Math.max(0,Math.min(dur,(ev.clientX-r.left)/r.width*dur))};
+  svg.onmousemove=ev=>{const t=tAt(ev),r=svg.getBoundingClientRect(),wr=wrap.getBoundingClientRect();
+    const n=ev.target.dataset?.n; const h=n?R.highlights.find(z=>z.n==n):null;
+    tip.style.display='block'; tip.style.left=(ev.clientX-wr.left)+'px'; tip.style.top=(ev.clientY-wr.top)+'px';
+    tip.innerHTML=h?`<b>#${h.n} ${esc(h.title)}</b> · ${fmt(h.s)}–${fmt(h.e)} · ★${h.score}`:fmt(t);
+    const X=t/dur*1000; cur.setAttribute('x1',X); cur.setAttribute('x2',X); cur.setAttribute('opacity','.5')};
+  svg.onmouseleave=()=>{tip.style.display='none';cur.setAttribute('opacity','0')};
+  svg.onclick=ev=>{const n=ev.target.dataset?.n; if(n)return jumpTo(+n); const t=tAt(ev); S.rtab='transcript'; $$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.t==='transcript')); renderRTab(); setTimeout(()=>scrollTx(t),30)};
+}
+function jumpTo(n){
+  if(S.rtab!=='highlights'){S.rtab='highlights';$$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.t==='highlights'))}
+  S.rf.fmt='all';S.rf.cats.clear();S.rf.min=1;S.rf.focus=false;renderRTab();
+  const c=$('#hl'+n); if(c){c.scrollIntoView({behavior:'smooth',block:'center'});c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),1600)}
+}
+function renderRTab(){
+  const R=S.report, box=$('#rtab'), a=R.analysis||{};
+  if(S.rtab==='highlights'){
+    const f=S.rf; let hs=(R.highlights||[]).filter(h=>(f.fmt==='all'||h.format===f.fmt||h.format==='둘다')&&(!f.cats.size||f.cats.has(h.category))&&h.score>=f.min&&(!f.focus||h.focus_match))
+      .filter(h=>{const d=decOf(R,h);return f.rv==='all'||(f.rv==='todo'&&!d)||f.rv===d});
+    hs=hs.slice().sort((x,y)=>f.sort==='time'?x.s-y.s:y.score-x.score);
+    S.visible=hs; if(S.cur>=hs.length)S.cur=Math.max(0,hs.length-1);
+    const cats=[...new Set((R.highlights||[]).map(h=>h.category))];
+    const all=R.highlights||[], nk=all.filter(h=>decOf(R,h)==='keep').length, ns=all.filter(h=>decOf(R,h)==='skip').length, np=Object.keys(R.previews||{}).length;
+    box.innerHTML=`<div class="card" style="margin-bottom:14px;padding:14px 18px"><div class="rvbar">
+        <span class="stat"><b>${nk}</b> kept · <b>${ns}</b> skipped · <b>${all.length-nk-ns}</b> to review</span>
+        <div class="bar thin" style="flex:1;min-width:120px"><i style="width:${all.length?((nk+ns)/all.length*100):0}%"></i></div>
+        <div class="seg"><button class="${f.rv==='all'?'on':''}" data-rv="all">All</button><button class="${f.rv==='todo'?'on':''}" data-rv="todo">To review</button><button class="${f.rv==='keep'?'on':''}" data-rv="keep">Kept</button><button class="${f.rv==='skip'?'on':''}" data-rv="skip">Skipped</button></div>
+        <button class="btn pri" ${nk?'':'disabled'} onclick="sendToEditors()">${ICON.check.replace('<svg','<svg width=15 height=15')} Send to editors (${nk})</button></div>
+      <div class="small muted" style="margin-top:2px"><span class="kbd">K</span> keep · <span class="kbd">S</span> skip · <span class="kbd">Space</span> play · <span class="kbd">↑</span><span class="kbd">↓</span> move · <span class="kbd">U</span> undo
+        ${np<all.length?` · <span style="color:var(--warn)">${all.length-np} pick(s) have no preview clip</span> <button class="btn sm" onclick="makePreviews()">Make previews</button>`:''}</div></div>
+      <div class="filters">
+      <div class="seg"><button class="${f.fmt==='all'?'on':''}" data-f="all">All</button><button class="${f.fmt==='본편'?'on':''}" data-f="본편">Main edit</button><button class="${f.fmt==='쇼츠'?'on':''}" data-f="쇼츠">Shorts</button></div>
+      ${(R.highlights||[]).some(h=>h.focus_match)?`<button class="fchip focus ${f.focus?'on':''}" id="fcFocus" title="${esc((R.meta.focus||{}).text||'')}">🎯 Focus (${(R.highlights||[]).filter(h=>h.focus_match).length})</button>`:''}
+      ${cats.map(c=>`<button class="fchip ${f.cats.has(c)?'on':''}" data-c="${esc(c)}"><i style="background:${CATHEX[c]||'#94a3b8'}"></i>${esc(c)}</button>`).join('')}
+      <div class="grow"></div><span class="small muted">min score</span><input type="range" min="1" max="10" value="${f.min}" id="minScore" style="accent-color:var(--acc);width:110px"><b id="minVal" style="width:18px">${f.min}</b>
+      <div class="seg"><button class="${f.sort==='time'?'on':''}" data-s="time">Time</button><button class="${f.sort==='score'?'on':''}" data-s="score">Score</button></div></div>
+      ${hs.length?hs.map((h,i)=>hlCard(R,h,i)).join(''):`<div class="card empty">${f.rv==='todo'&&(R.highlights||[]).length?'All reviewed 🎉 — click “Send to editors”.':'No picks match these filters.'}</div>`}`;
+    $$('[data-f]',box).forEach(b=>b.onclick=()=>{f.fmt=b.dataset.f;renderRTab()});
+    const ff=$('#fcFocus'); if(ff)ff.onclick=()=>{f.focus=!f.focus;S.cur=0;renderRTab()};
+    $$('[data-rv]',box).forEach(b=>b.onclick=()=>{f.rv=b.dataset.rv;S.cur=0;renderRTab()});
+    $$('.hl',box).forEach((c,i)=>c.addEventListener('mousedown',()=>{if(S.cur!==i){S.cur=i;$$('.hl.cur').forEach(x=>x.classList.remove('cur'));c.classList.add('cur')}}));
+    $$('[data-c]',box).forEach(b=>b.onclick=()=>{const c=b.dataset.c;f.cats.has(c)?f.cats.delete(c):f.cats.add(c);renderRTab()});
+    $$('[data-s]',box).forEach(b=>b.onclick=()=>{f.sort=b.dataset.s;renderRTab()});
+    const ms=$('#minScore'); ms.oninput=()=>$('#minVal').textContent=ms.value; ms.onchange=()=>{f.min=+ms.value;renderRTab()};
+  } else if(S.rtab==='transcript'){
+    box.innerHTML=`<div class="filters"><input class="inp" id="txq" placeholder="Search the transcript…" style="flex:1;max-width:420px"><span class="small muted" id="txn"></span></div>
+      <div class="tx txfull" id="txAll">${txLines(R,0,1e9,true)}</div>`;
+    const q=$('#txq'); q.oninput=()=>{const v=q.value.trim().toLowerCase();let n=0;$$('#txAll .tline').forEach(l=>{const m=!v||l.dataset.x.includes(v);l.style.display=m?'':'none';l.classList.toggle('hit',!!v&&m);if(v&&m)n++});$('#txn').textContent=v?`${n} lines`:''};
+  } else {
+    const ideas=a.compilation_ideas||[], ch=a.chapters||[];
+    box.innerHTML=`${ideas.length?`<h3 style="margin:0 0 10px;font-size:15px">Video ideas</h3>`+ideas.map(c=>`<div class="card" style="margin-bottom:10px"><b>${esc(c.title)}</b><div class="muted" style="margin-top:4px">${esc(c.description)}</div></div>`).join(''):''}
+      ${ch.length?`<h3 style="margin:22px 0 10px;font-size:15px">Chapters</h3><div class="card" style="padding:6px 20px">`+ch.map(c=>`<div class="tline" style="grid-template-columns:150px 1fr;padding:8px 0;border-bottom:1px solid var(--line)"><span class="tt" onclick="copy('${esc(c.start)}')">${esc(c.start)} – ${esc(c.end)}</span><span>${esc(c.what)}</span></div>`).join('')+`</div>`:''}
+      ${!ideas.length&&!ch.length?'<div class="card empty">Nothing here for this stream.</div>':''}`;
+  }
+}
+function pkey(h){return `${Math.floor(h.s)}-${Math.floor(h.e)}`}
+function decOf(R,h){const d=(R.review||{})[pkey(h)];return d?d.d:null}
+function hlCard(R,h,idx){
+  const col=CATHEX[h.category]||'#94a3b8', yt=ytLink(R,h.s), d=decOf(R,h), pv=(R.previews||{})[pkey(h)];
+  const bars=Array.from({length:10},(_,i)=>`<i class="${i<h.score?'f':''}"></i>`).join('');
+  const len=Math.min(h.e+3,h.s+600)-Math.max(0,h.s-3);
+  const preview=pv?`<div class="pv" id="pv${h.n}" onclick="playPreview(${h.n})"><div class="play">${ICON.play}</div><span class="len">${fmt(len).replace(/^0:/,'')}</span></div>`
+    :`<div class="pv none">No preview clip<br><span class="small">${R.meta&&R.meta.vod?'The video isn’t on this PC anymore.':''}</span></div>`;
+  return `<div class="hl${d==='keep'?' kept':d==='skip'?' skipped':''}${idx===S.cur?' cur':''}" id="hl${h.n}" data-n="${h.n}"><div class="cbar" style="background:${col}"></div><div class="in"><div class="hlgrid"><div>
+    <div class="top"><span class="n">#${h.n}</span><h4>${esc(h.title)}</h4><div class="grow"></div><span class="scorebar">${bars}<span>${h.score}</span></span></div>
+    <div class="top" style="margin-top:6px;gap:8px"><span class="tm" onclick="copy('${fmt(h.s)}','Copied ${fmt(h.s)}')">${fmt(h.s)}</span><span class="muted">→</span><span class="tm" onclick="copy('${fmt(h.e)}','Copied ${fmt(h.e)}')">${fmt(h.e)}</span>
+      <span class="muted small">(${((h.e-h.s)/60).toFixed(1)} min)</span><span class="chip" style="background:${col}22;color:${col}">${esc(h.category)}</span><span class="chip">${h.format==='쇼츠'?'Shorts':h.format==='둘다'?'Main + Shorts':'Main edit'}</span>${h.focus_match?`<span class="chip focus" title="${esc((R.meta.focus||{}).text||'Matches the focus you set')}">🎯 Focus</span>`:''}</div>
+    <div class="row"><b>What</b>${esc(h.summary||'')}</div>
+    <div class="row"><b>Why</b>${esc(h.why||'')}</div>
+    ${h.editor_note?`<div class="row"><b>Editor</b>${esc(h.editor_note)}</div>`:''}
+    ${(h.key_quotes||[]).map(q=>`<blockquote>“${esc(q)}”</blockquote>`).join('')}
+    <div class="foot"><button class="rvbtn k${d==='keep'?' on':''}" onclick="decide(${h.n},'keep')">${ICON.check.replace('<svg','<svg width=14 height=14')} Keep</button>
+      <button class="rvbtn x${d==='skip'?' on':''}" onclick="decide(${h.n},'skip')">${ICON.x.replace('<svg','<svg width=13 height=13')} Skip</button>
+      <span style="width:6px"></span>${yt?`<a class="btn sm" href="${yt}" target="_blank">${ICON.play} YouTube</a>`:''}
+      <button class="btn sm ghost" onclick="toggleTx(${h.n})">${ICON.text} Transcript</button>
+      <button class="btn sm ghost" onclick="copy(${esc(JSON.stringify(`${fmt(h.s)} ~ ${fmt(h.e)} ${h.title}`))})">${ICON.copy} Copy line</button></div>
+    </div>${preview}</div>
+    <div id="tx${h.n}"></div></div></div>`;
+}
+function playPreview(n){
+  const R=S.report,h=R.highlights.find(z=>z.n==n),url=(R.previews||{})[pkey(h)],box=$('#pv'+n); if(!url||!box)return;
+  $$('.pv video').forEach(v=>{if(v.closest('.pv')!==box)v.pause()});
+  let v=box.querySelector('video');
+  if(!v){box.innerHTML=`<video src="${url}" controls preload="auto" playsinline></video>`;box.onclick=null;v=box.querySelector('video')}
+  v.paused?v.play().catch(()=>{}):v.pause();
+}
+async function decide(n,d){
+  const R=S.report,h=R.highlights.find(z=>z.n==n),k=pkey(h); R.review=R.review||{};
+  const cur=(R.review[k]||{}).d, nd=cur===d?null:d;
+  if(nd)R.review[k]={d:nd,t:Date.now()/1000};else delete R.review[k];
+  const i=S.visible.findIndex(z=>z.n==n);
+  try{await api('/api/review',{id:R.id,key:k,decision:nd})}catch(e){toast(e.message,1)}
+  // move to the next one that still needs a decision
+  let next=i; if(nd){for(let j=i+1;j<S.visible.length;j++){if(!decOf(R,S.visible[j])){next=j;break}}}
+  renderRTab();
+  if(S.rf.rv!=='all'){S.cur=Math.min(i,S.visible.length-1)}else S.cur=next;
+  focusCur(!!nd);
+}
+function focusCur(autoplay){
+  const cards=$$('.hl'); cards.forEach((c,i)=>c.classList.toggle('cur',i===S.cur)); const c=cards[S.cur]; if(!c)return;
+  c.scrollIntoView({behavior:'smooth',block:'center'}); if(autoplay&&S.autoplay!==false)setTimeout(()=>playPreview(+c.dataset.n),250);
+}
+async function sendToEditors(){
+  const R=S.report;
+  try{const r=await api('/api/review/export',{id:R.id});
+    toast(r.posted?`${r.count} moments sent — building the editor page and posting to Discord (see Jobs)`:`${r.count} moments saved — set up Discord in Settings to post them`);
+  }catch(e){toast(e.message,1)}
+}
+async function makePreviews(){try{await api('/api/previews',{id:S.report.id});toast('Making preview clips — see Jobs');}catch(e){toast(e.message,1)}}
+document.addEventListener('keydown',ev=>{
+  if(S.view!=='reports'||!S.report||S.rtab!=='highlights')return;
+  if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'')||ev.ctrlKey||ev.metaKey||ev.altKey)return;
+  const vis=S.visible||[]; if(!vis.length)return; const h=vis[S.cur]; const k=ev.key.toLowerCase();
+  if(k==='arrowdown'||k==='j'){ev.preventDefault();S.cur=Math.min(vis.length-1,S.cur+1);focusCur(false)}
+  else if(k==='arrowup'){ev.preventDefault();S.cur=Math.max(0,S.cur-1);focusCur(false)}
+  else if(k==='k'){ev.preventDefault();decide(h.n,'keep')}
+  else if(k==='s'||k==='x'){ev.preventDefault();decide(h.n,'skip')}
+  else if(k==='u'){ev.preventDefault();const d=decOf(S.report,h);if(d)decide(h.n,d)}
+  else if(k===' '){ev.preventDefault();playPreview(h.n)}
+});
+function txLines(R,a,b,full){
+  const tr=R.tracks||{}; const hs=R.highlights||[];
+  const chat=(R.chat&&R.chat.lines||[]).filter(c=>c[0]>=a&&c[0]<=b).map(c=>[c[0],c[0],'__chat__',c[2],c[1],c[3]]);   // viewer chat, already shifted by the chat delay
+  return (R.transcript||[]).filter(l=>l[0]>=a&&l[0]<=b).concat(chat).sort((x,y)=>x[0]-y[0]).map(l=>{
+    if(l[2]==='__chat__')return `<div class="tline chat" data-t="${l[0]}" data-x="${esc((l[4]+' '+l[3]).toLowerCase())}"><span class="tt" onclick="copy('${fmt(l[0])}','Copied ${fmt(l[0])}')">${fmt(l[0])}</span><span class="sp">${l[5]?'💰 chat':'💬 chat'}</span><span class="cx"><b>${esc(l[4])}</b>${esc(l[3])}</span></div>`;
+    const t=tr[l[2]]||{label:l[2],role:l[2]}; const h=full?hs.find(z=>l[0]>=z.s&&l[0]<=z.e):null;
+    return `<div class="tline" data-t="${l[0]}" data-x="${esc(l[3].toLowerCase())}" ${h?`style="border-left-color:${CATHEX[h.category]||'#94a3b8'}" title="#${h.n} ${esc(h.title)}"`:''}><span class="tt" onclick="copy('${fmt(l[0])}','Copied ${fmt(l[0])}')">${fmt(l[0])}</span><span class="sp" style="color:${ROLECOL[t.role]||'#aaa'}">${esc(t.role==='donation'?'💰 '+t.label:t.label)}</span><span>${esc(l[3])}</span></div>`}).join('')||'<div class="muted small" style="padding:10px 14px">No transcript lines here.</div>';
+}
+function toggleTx(n){const box=$('#tx'+n);if(box.innerHTML){box.innerHTML='';return}const h=S.report.highlights.find(z=>z.n==n);box.innerHTML=`<div class="tx">${txLines(S.report,h.s-20,h.e+20,false)}</div>`}
+function scrollTx(t){const ls=$$('#txAll .tline');const l=ls.find(x=>+x.dataset.t>=t-3)||ls[ls.length-1];if(l){$$('#txAll .tline.cur').forEach(x=>x.classList.remove('cur'));l.classList.add('cur');l.scrollIntoView({block:'center'})}}
+async function openFile(what){try{await api('/api/open',{id:S.report.id,what})}catch(e){toast(e.message,1)}}
+async function saveYt(){try{await api('/api/result/youtube',{id:S.report.id,url:$('#ytUrl').value,offset:$('#ytOff').value});S.report.meta.youtube_url=$('#ytUrl').value;S.report.meta.youtube_offset_seconds=+$('#ytOff').value;toast('Saved — report files updated');renderRTab()}catch(e){toast(e.message,1)}}
+async function redo(){
+  const R=S.report;
+  const f=await askFocus({title:'Re-run Claude',names:[R.meta.vod||'stream'],okLabel:'Re-run',pre:R.meta.focus,
+    note:'Claude reads this stream again and the picks are rebuilt. The transcript is reused, so it’s quick. Earlier Keep / Skip choices only stay on moments whose times didn’t change.'});
+  if(!f)return;
+  try{await api('/api/result/redo',{id:R.id,focus:f});toast('Queued');show('jobs')}catch(e){toast(e.message,1)}}
+function confirmBox(m){return window.confirm(m)}
+
+/* ----------------------------------------------------------- settings */
+const MODELS=[['claude-sonnet-5-5','Sonnet 5.5 — balanced (recommended)'],['claude-opus-5-5','Opus 5.5 — best judgement, costs more'],['claude-haiku-4-5-20251001','Haiku 4.5 — cheapest, rougher picks']];
+const WHISPER=[['large-v3','large-v3 — most accurate'],['large-v3-turbo','large-v3-turbo — about 3× faster']];
+const ROLES=[['mic','🎙 My mic'],['discord','💬 Discord'],['donation','💰 Donations / TTS'],['game','🎮 Game / content'],['bgm','🎵 BGM (ignored)'],['ignore','— Ignore']];
+async function loadSettings(){
+  if(!S.dirty||!S.cfg){try{S.cfg=await api('/api/config')}catch(e){toast(e.message,1);return}}
+  renderSettings();
+}
+const opt=(list,v)=>list.map(([k,l])=>`<option value="${k}" ${k===v?'selected':''}>${esc(l)}</option>`).join('');
+function fld(label,inner,hint){return `<div class="fld"><label>${label}</label><div>${inner}${hint?`<div class="hint">${hint}</div>`:''}</div></div>`}
+function renderSettings(){
+  const c=S.cfg, g=c.google_drive||{}, el=$('#v-settings');
+  el.innerHTML=`<div class="vh"><h1>Settings</h1></div><div class="sgrid">
+  <div class="card sec"><h3>Claude</h3><div class="desc">Claude reads each stream and picks the highlights.</div>
+    ${fld('Use',`<div class="seg" id="s_backend"><button data-b="subscription" class="${c.claude_backend!=='api'?'on':''}">My Claude subscription</button><button data-b="api" class="${c.claude_backend==='api'?'on':''}">API key (pay per use)</button></div>`,
+      c.claude_backend!=='api'?'Runs through Claude Code, logged in with your Claude plan. No extra cost, but it shares your plan’s usage limits with your chats.':'Billed per use from prepaid credits at platform.claude.com.')}
+    <div id="subBox" ${c.claude_backend==='api'?'hidden':''}>${fld('Claude Code',`<div class="row2" style="align-items:center;flex-wrap:wrap"><span id="ccState"><span class="muted small">Checking…</span></span><div class="grow"></div><span id="ccBtns"></span></div><div class="hint" id="ccHint"></div>`)}</div>
+    <div id="apiBox" ${c.claude_backend==='api'?'':'hidden'}>${fld('API key',`<input class="inp" type="password" id="s_key" placeholder="${c._has_key?'Saved ✓ — paste a new key to replace it':'sk-ant-…'}" autocomplete="off">`,'platform.claude.com → Settings → API keys. Needs prepaid credits.')}</div>
+    ${fld('Model',`<select class="inp" id="s_model">${opt(MODELS,c.claude_model)}</select>`,'Token usage for each stream is shown in the job log.')}
+    ${fld('Quick-scan model',`<select class="inp" id="s_scan">${opt([['claude-haiku-4-5-20251001','Haiku 4.5 — fast and light (recommended)'],['claude-sonnet-5-5','Sonnet 5.5 — slower, catches a bit more']],c.scan_model||'claude-haiku-4-5-20251001')}</select>`,'Used only for the first, wide scan. The model above makes the final judgement.')}
+    ${fld('Preview clips',`<div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_prev" ${c.make_previews!==false?'checked':''}><span></span></label><span class="small muted">Cut a small clip of every pick for review mode (a few MB each)</span></div>`)}
+    ${fld('Picks per hour',`<input class="inp" type="number" min="1" max="20" id="s_ph" value="${c.highlights_per_hour??5}" style="width:100px">`,'A rough target — Claude adds more if the stream is packed and fewer if it’s quiet.')}
+  </div>
+  <div class="card sec"><h3>About your channel</h3><div class="desc">Claude reads this before every stream. Characters, running jokes, nicknames, usual games and what your editors like all make the picks sharper.</div>
+    ${fld('Channel context',`<textarea class="inp" id="s_ctx" rows="7">${esc(c.channel_context||'')}</textarea>`)}
+    ${fld('What editors want',`<textarea class="inp" id="s_goal" rows="3">${esc(c.editing_goal||'')}</textarea>`)}
+    ${fld('Words to spell right',`<input class="inp" id="s_vocab" value="${esc((c.vocabulary||[]).join(', '))}">`,'Comma-separated. Names and words the transcription tends to get wrong.')}
+  </div>
+  <div class="card sec" id="focusAnchor"><h3>Focus presets</h3><div class="desc">Tell Claude what to look for in a certain kind of stream, for example every crash in Ace Combat or the emotional moments in Trickal. When you analyze, “Auto” picks the first preset whose keyword appears in the recording’s file name; you can also pick one yourself or type something extra. Claude then finds every matching moment, even ones that aren’t funny, and marks them 🎯 in the report.</div>
+    <div id="fpRows"></div><button class="btn sm" onclick="fpAdd()">＋ Add preset</button>
+  </div>
+  <div class="card sec"><h3>Chat from Arkbird</h3><div class="desc">If Arkbird saved your stream chat next to the recording (the “….markers.json” file you already upload), SkyEye reads it for extra context: what you were answering, chat bursts and exact donation messages. Nothing to switch on here; it just works when the file has chat.</div>
+    ${fld('Chat delay',`<div class="row2" style="align-items:center"><input class="inp" type="number" min="0" max="60" step="1" id="s_cd" value="${c.chat_delay_seconds??6}" style="width:90px"><span class="small muted">seconds</span></div>`,'How many seconds chat lags behind you (stream delay plus reading and typing). SkyEye moves every chat line this much earlier so it lines up with what actually happened.')}
+  </div>
+  <div class="card sec" id="profileAnchor"><h3>Learn from my YouTube channel</h3><div class="desc">SkyEye reads your uploaded edits and Shorts (titles, view counts, chapters and subtitles) and writes a style profile: what kinds of moments your channel turns into videos and what performs best. Every stream analysis uses it.</div>
+    ${fld('Channel link',`<input class="inp" id="s_yt" value="${esc((c.youtube_channels||[]).join(', '))}" placeholder="https://www.youtube.com/@yourhandle">`,'The channel with your edited videos. More than one? Separate them with commas.')}
+    ${fld('Videos to study',`<div class="row2" style="align-items:center"><input class="inp" type="number" min="0" max="100" id="s_lv" value="${c.learn_videos??30}" style="width:90px"><span class="small muted">videos</span><input class="inp" type="number" min="0" max="100" id="s_ls" value="${c.learn_shorts??20}" style="width:90px"><span class="small muted">Shorts</span></div>`,'Your newest uploads plus your most-viewed ones. More videos = a better profile, but a longer read for Claude.')}
+    ${fld('',`<div class="row2" style="align-items:center"><button class="btn pri" onclick="learnChannel()">${ICON.star} ${c._profile&&c._profile.text?'Learn again':'Learn from my channel'}</button><span class="small muted">${c._profile&&c._profile.learned?`Last learned ${esc(c._profile.learned)} from ${c._profile.videos} videos`:'Takes a few minutes. Uses Claude once.'}</span></div>`)}
+    ${fld('Style profile',`<textarea class="inp" id="s_prof" rows="${c._profile&&c._profile.text?16:4}" placeholder="Nothing learned yet. Click “Learn from my channel”, or write your own notes here.">${esc((c._profile&&c._profile.text)||'')}</textarea>
+      <div class="row2" style="align-items:center;margin-top:8px"><label class="tog"><input type="checkbox" id="s_useprof" ${c.use_channel_profile!==false?'checked':''}><span></span></label><span class="small muted">Use this profile when picking highlights</span></div>`,'You can edit it: fix anything Claude got wrong, or add what you want more (or less) of.')}
+  </div>
+  <div class="card sec"><h3>Audio tracks</h3><div class="desc">Which audio track in your OBS recording is which. Not sure? Use “Tracks” on a recording to hear a 30-second sample of each one.</div>
+    <div id="samplesAnchor"></div><div id="samplesBox"></div>
+    <div class="trk trk-h"><span>Track #</span><span>What it is</span><span>Name in reports</span><span></span></div>
+    <div id="trkRows"></div><button class="btn sm" onclick="addTrack()">＋ Add track</button>
+  </div>
+  <div class="card sec"><h3>Transcription</h3><div class="desc">Runs on this PC's GPU. The first run downloads the model (about 3 GB).</div>
+    ${fld('Whisper model',`<select class="inp" id="s_wm">${opt(WHISPER,c.whisper_model)}</select>`)}
+    ${fld('Run on',`<select class="inp" id="s_dev">${opt([['cuda','NVIDIA GPU (fast)'],['cpu','CPU (very slow)']],c.device)}</select>`)}
+    ${fld('Parallel pieces',`<select class="inp" id="s_bs" style="width:260px">${opt([['1','1 — off (slowest, least memory)'],['4','4'],['8','8 — recommended'],['16','16 — fastest, needs lots of GPU memory']],String(c.whisper_batch_size||8))}</select>`,'How many pieces of audio the GPU transcribes at once. If you ever see an out-of-memory error, lower it.')}
+    ${fld('Low GPU memory',`<div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_lowvram" ${c.low_vram?'checked':''}><span></span></label><span class="small muted">Use about half the GPU memory (for running it while gaming)</span></div>`)}
+  </div>
+  <div class="card sec"><h3>Performance</h3><div class="desc">How SkyEye shares your PC.</div>
+    ${fld('Background priority',`<div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_prio" ${c.background_priority!==false?'checked':''}><span></span></label><span class="small muted">Let games, OBS and other apps go first (takes effect after restarting SkyEye)</span></div>`)}
+    ${fld('Download ahead',`<div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_prefetch" ${c.prefetch!==false?'checked':''}><span></span></label><span class="small muted">While one recording is being processed, download the next one in the queue</span></div>`,'Needs free space for two recordings at once. The GPU memory is freed automatically 2 minutes after the last job.')}
+  </div>
+  <div class="card sec"><h3>Google Drive</h3><div class="desc">Where your stream PC uploads recordings.</div>
+    ${fld('Connection',`<div class="row2" style="align-items:center"><span id="dlState"></span><div class="grow"></div><button class="btn sm" onclick="driveLogin()">${S.setup.drive?'Log in again':'Connect Google Drive'}</button></div><div class="hint" id="dlMsg2"></div>`)}
+    ${fld('Recordings folder',`<input class="inp" id="s_fid" value="${esc(g.folder_id||'')}" placeholder="Paste the Drive folder link">`)}
+    ${fld('Download to',`<div class="row2"><input class="inp" id="s_dl" value="${esc(g.download_dir||'')}" placeholder="(default) vod-scout\\downloads"><button class="btn" onclick="pickFolder('s_dl')">Browse…</button></div>`,'Needs free space about the size of one recording (up to ~25 GB).')}
+    ${fld('Save results to',`<div class="row2"><input class="inp" id="s_rd" value="${esc(g.results_dir||'')}" placeholder="(default) vod-scout\\results"><button class="btn" onclick="pickFolder('s_rd')">Browse…</button></div>`)}
+    ${fld('Clean up this PC',`<div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_del" ${g.delete_after_analysis!==false?'checked':''}><span></span></label><span class="small muted">Remove the temporary downloaded copy from this PC after processing</span></div>`,'SkyEye never writes to your Google Drive: your recordings are never deleted, moved or changed. This switch is just about the copy it downloads to this PC (up to ~20 GB each).')}
+  </div>
+  <div class="card sec" id="hostAnchor"><h3>Editor page</h3><div class="desc">When you press “Send to editors”, SkyEye puts one web page (summary, timeline and every moment you kept, with its clip playing inside) on Cloudflare R2 and posts just the link to Discord. Each stream gets its own long, hidden link, and your Google Drive is never touched. Create the bucket once in Cloudflare (R2 Object Storage), then fill this in.</div>
+    ${fld('Endpoint URL',`<input class="inp" id="s_hep" value="${esc((c.hosting||{}).endpoint||'')}" placeholder="https://xxxxxxxx.r2.cloudflarestorage.com">`,'Shown when you create the API token. Don’t add the bucket name to it.')}
+    ${fld('Bucket name',`<input class="inp" id="s_hb" value="${esc((c.hosting||{}).bucket||'')}" placeholder="skyeye-reports" style="width:300px">`)}
+    ${fld('Public URL',`<input class="inp" id="s_hpu" value="${esc((c.hosting||{}).public_url||'')}" placeholder="https://pub-xxxxxxxx.r2.dev">`,'The bucket’s public address (Bucket → Settings → Public access → r2.dev subdomain, or your own domain).')}
+    ${fld('Clip quality',`<select class="inp" id="s_hq" style="width:360px">${opt([['small','Small — 360p (about a third of the size)'],['original','Original — 480p review previews']],(c.hosting||{}).clip_quality==='original'?'original':'small')}</select>`,'The uploaded copies are made once when you send. Small is plenty to judge a moment and keeps your 10 GB going much longer.')}
+    ${fld('Access Key ID',`<input class="inp" type="password" id="s_hid" autocomplete="off" placeholder="${c._has_r2_id?'Saved ✓ — paste a new one to replace it':'Access Key ID'}">`)}
+    ${fld('Secret Access Key',`<div class="row2"><input class="inp" type="password" id="s_hsec" autocomplete="off" placeholder="${c._has_r2_secret?'Saved ✓ — paste a new one to replace it':'Secret Access Key'}"><button class="btn" onclick="hostingTest()">Test connection</button></div>`,'Kept in r2_keys.json on this PC. Never share it.')}
+  </div>
+  <div class="card sec" id="discordAnchor"><h3>Discord</h3><div class="desc">Nothing is posted automatically. After an analysis, review the picks (Keep / Skip), then click “Send to editors”: one card with a link to the editor page (set up above) is posted.</div>
+    ${fld('Webhook link',`<div class="row2"><input class="inp" type="password" id="s_wh" autocomplete="off" placeholder="${c._has_webhook?'Saved ✓ — paste a new link to replace it':'https://discord.com/api/webhooks/…'}"><button class="btn" onclick="discordTest()">Send test</button></div>`,'In Discord: right-click the channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL. Keep it private — anyone with it can post in that channel.')}
+    ${fld('Video clips',`<div style="display:grid;gap:8px"><div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_dclips" ${(c.discord||{}).clips!==false?'checked':''}><span></span></label><span class="small muted">(Only without the Editor page) post a playable clip of each moment under the card</span></div>
+      <div class="row2" style="align-items:center"><span class="small muted">up to</span><select class="inp" id="s_dlen" style="width:110px">${opt([['20','20 s'],['30','30 s'],['60','60 s'],['120','2 min']],String((c.discord||{}).clip_max||60))}</select>
+      <span class="small muted">· server upload limit</span><select class="inp" id="s_dmb" style="width:200px">${opt([['10','10 MB (normal)'],['50','50 MB (boost level 2)'],['100','100 MB (boost level 3)']],String((c.discord||{}).upload_mb||10))}</select></div></div>`,'Only used if the Editor page above isn’t set up. Clips are cut from the review previews and squeezed to fit the limit, so longer clips look softer on a normal server.')}
+    ${fld('Mention',`<input class="inp" id="s_dm" value="${esc((c.discord||{}).mention||'')}" placeholder="Nobody" style="width:260px">`,'Leave empty for no ping, or write @here, or paste a role ID (Discord: Server Settings → Roles → right-click role → Copy Role ID).')}
+    ${c._has_webhook?fld('',`<button class="btn sm ghost" onclick="$('#s_wh').value='-';saveSettings()">Remove webhook</button>`):''}
+  </div>
+  <div class="card sec"><h3>This PC</h3>
+    ${fld('Recordings folder',`<div class="row2"><input class="inp" id="s_lf" value="${esc(c.local_folder||'')}" placeholder="Optional — e.g. your OBS output folder"><button class="btn" onclick="pickFolder('s_lf')">Browse…</button></div>`,'Videos in this folder are listed under Recordings → This PC.')}
+  </div>
+  <div class="card sec"><h3>App</h3>
+    ${fld('Keep extracted audio',`<label class="tog"><input type="checkbox" id="s_keep" ${c.keep_extracted_audio?'checked':''}><span></span></label>`,'Off saves disk space.')}
+    ${fld('Keep running',`<div class="row2" style="align-items:center"><label class="tog"><input type="checkbox" id="s_keeprun" ${c.keep_running!==false?'checked':''}><span></span></label><span class="small muted">Stay running in the background until I click Quit (recommended)</span></div>`,'Your PC also won’t go to sleep while a job is running.')}
+    ${fld('Quit',`<button class="btn danger" onclick="quitApp()">Quit SkyEye</button>`,'Reopen any time from the desktop shortcut.')}
+  </div></div>
+  <div class="savebar"><button class="btn pri" id="saveBtn" onclick="saveSettings()">Save settings</button><span class="small muted" id="saveMsg"></span></div>`;
+  renderTracks(); renderSamples(); renderPresets(); updateDriveLogin(); renderClaudeCode(); refreshClaude();
+  $$('#s_backend button').forEach(b=>b.onclick=()=>{S.cfg.claude_backend=b.dataset.b;$$('#s_backend button').forEach(x=>x.classList.toggle('on',x===b));
+    $('#subBox').hidden=b.dataset.b==='api';$('#apiBox').hidden=b.dataset.b!=='api';
+    $('#s_backend').parentElement.querySelector('.hint').textContent=b.dataset.b==='api'?'Billed per use from prepaid credits at platform.claude.com.':'Runs through Claude Code, logged in with your Claude plan. No extra cost, but it shares your plan’s usage limits with your chats.';dirty()});
+  $$('input,textarea,select',el).forEach(i=>i.addEventListener('input',()=>{S.dirty=true;$('#saveMsg').textContent='Unsaved changes'}));
+}
+async function refreshClaude(){try{const st=await api('/api/claude?refresh=1');S.setup.claude=st;renderClaudeCode()}catch(e){}}
+function renderClaudeCode(){
+  const el=$('#ccState'); if(!el)return; const st=(S.setup||{}).claude||{};
+  let state,btns='',hint='';
+  if(st.installed===null||st.installed===undefined){state='<span class="muted small">Checking…</span>'}
+  else if(!st.installed){state='<span class="chip transcribed"><span class="d"></span>Not installed</span>';
+    btns=`<button class="btn sm pri" onclick="ccAction('install')">Install Claude Code</button> <button class="btn sm ghost" onclick="refreshClaude()">Check again</button>`;
+    hint='Opens a PowerShell window that installs Claude Code (Anthropic’s official tool) and then asks you to log in with your Claude account in the browser. Come back here afterwards.'}
+  else if(!st.logged_in){state='<span class="chip transcribed"><span class="d"></span>Installed · not logged in</span>';
+    btns=`<button class="btn sm pri" onclick="ccAction('login')">Log in</button> <button class="btn sm ghost" onclick="refreshClaude()">Check again</button>`;
+    hint='Opens a window where you log in with your Claude account (choose your subscription, not Console).'}
+  else{state=`<span class="chip done"><span class="d"></span>Ready</span> <span class="small muted">${esc(st.detail||'')}</span>`;
+    btns=`<button class="btn sm ghost" onclick="ccAction('login')">Log in again</button>`}
+  el.innerHTML=state; $('#ccBtns').innerHTML=btns; $('#ccHint').textContent=hint;
+}
+async function ccAction(what){try{await api('/api/claude/'+what,{});toast(what==='install'?'Installer window opened':'Login window opened');
+  clearInterval(S._ccPoll);let n=0;S._ccPoll=setInterval(async()=>{if(++n>60||S.view!=='settings'){clearInterval(S._ccPoll);return}await refreshClaude();if(S.setup.claude&&S.setup.claude.logged_in){clearInterval(S._ccPoll);toast('Claude is ready ✓')}},5000)}catch(e){toast(e.message,1)}}
+function renderTracks(){
+  const rows=S.cfg.tracks||[];
+  $('#trkRows').innerHTML=rows.map((t,i)=>`<div class="trk"><input class="inp" type="number" min="1" value="${t.number}" onchange="S.cfg.tracks[${i}].number=+this.value;dirty();renderSamples()">
+    <select class="inp" onchange="S.cfg.tracks[${i}].role=this.value;dirty();renderSamples()">${opt(ROLES,t.role)}</select>
+    <input class="inp" value="${esc(t.label||'')}" placeholder="default" onchange="S.cfg.tracks[${i}].label=this.value;dirty()">
+    <button class="btn sm ghost" onclick="S.cfg.tracks.splice(${i},1);dirty();renderTracks();renderSamples()">${ICON.x}</button></div>`).join('');
+}
+function renderPresets(){
+  const box=$('#fpRows'); if(!box)return; const ps=S.cfg.focus_presets=S.cfg.focus_presets||[];
+  box.innerHTML=ps.length?ps.map((p,i)=>`<div class="fprow"><div class="r1"><input class="inp" value="${esc(p.name||'')}" placeholder="Name, e.g. Ace Combat" oninput="fpSet(${i},'name',this.value)">
+      <input class="inp" value="${esc((p.keywords||[]).join(', '))}" placeholder="Words in the file name, comma-separated: 에컴, ace combat" oninput="fpSet(${i},'keywords',this.value)">
+      <button class="btn sm ghost" title="Remove" onclick="fpDel(${i})">${ICON.x}</button></div>
+      <textarea class="inp" rows="2" style="min-height:56px" placeholder="What Claude should look for, e.g. 추락하는 장면과 그 리액션을 전부 찾아줘" oninput="fpSet(${i},'text',this.value)">${esc(p.text||'')}</textarea></div>`).join('')
+    :'<div class="small muted" style="margin-bottom:10px">No presets yet. Add one, or just type instructions when you analyze.</div>';
+}
+function fpSet(i,k,v){const p=S.cfg.focus_presets[i];p[k]=k==='keywords'?v.split(/[,\n]/).map(x=>x.trim()).filter(Boolean):v;dirty()}
+function fpAdd(){(S.cfg.focus_presets=S.cfg.focus_presets||[]).push({name:'',keywords:[],text:''});dirty();renderPresets()}
+function fpDel(i){S.cfg.focus_presets.splice(i,1);dirty();renderPresets()}
+function dirty(){S.dirty=true;const m=$('#saveMsg');if(m)m.textContent='Unsaved changes'}
+function addTrack(){const n=Math.max(0,...(S.cfg.tracks||[]).map(t=>t.number))+1;(S.cfg.tracks=S.cfg.tracks||[]).push({number:n,role:'ignore'});dirty();renderTracks()}
+function renderSamples(){
+  const box=$('#samplesBox'); if(!box)return;
+  const j=S.jobs.slice().reverse().find(j=>j.kind==='tracks'&&j.status==='done'&&j.result);
+  const running=S.jobs.find(j=>j.kind==='tracks'&&(j.status==='running'||j.status==='queued'));
+  if(!j){box.innerHTML=running?`<div class="card" style="background:var(--bg);margin-bottom:16px;display:flex;gap:10px;align-items:center"><div class="spin"></div>Preparing track samples for ${esc(running.name)}… (Drive recordings are downloaded first)</div>`:'';return}
+  const roleOf=n=>(S.cfg.tracks||[]).find(t=>t.number===n)?.role||'ignore';
+  box.innerHTML=`<div class="small muted" style="margin-bottom:8px">Samples from <b style="color:var(--ink)">${esc(j.name)}</b> (starting ${fmt(j.result.start)}) — listen and pick what each one is:</div><div class="samples">`+
+    j.result.tracks.map(t=>`<div class="smp"><div><b>Track ${t.number}</b>${t.title?`<div class="small muted">${esc(t.title)}</div>`:''}</div>
+      <div>${t.url?`<audio controls preload="none" src="${t.url}"></audio>`:'<span class="muted small">no sample</span>'}</div>
+      <div class="small muted">${t.active!=null?`${Math.round(t.active*100)}% of the sample has sound<div class="lvl"><i style="width:${Math.round(t.active*100)}%"></i></div>`:''}</div>
+      <select class="inp" onchange="setRole(${t.number},this.value)">${opt(ROLES,roleOf(t.number))}</select></div>`).join('')+`</div>`;
+}
+function setRole(n,role){const tr=S.cfg.tracks=S.cfg.tracks||[];const t=tr.find(x=>x.number===n);if(t)t.role=role;else tr.push({number:n,role});tr.sort((a,b)=>a.number-b.number);dirty();renderTracks()}
+function updateDriveLogin(){
+  const st=S.setup||{}; const el=$('#dlState'); if(el)el.innerHTML=st.drive?'<span class="chip done"><span class="d"></span>Connected</span>':'<span class="chip transcribed"><span class="d"></span>Not connected</span>';
+  const m=st.drive_login==='running'||st.drive_login==='failed'?st.drive_message:(st.drive_login==='ok'?st.drive_message:'');
+  ['dlMsg','dlMsg2'].forEach(id=>{const x=$('#'+id);if(x)x.textContent=m||''});
+  if(st.drive_login==='ok'&&S._wasLoggingIn){S._wasLoggingIn=false;DRIVEREFRESH()}
+  if(st.drive_login==='running')S._wasLoggingIn=true;
+}
+function DRIVEREFRESH(){S.drive=null;if(S.view==='recordings')loadRec(true)}
+async function pickFolder(id){try{const r=await api('/api/pick',{kind:'folder'});if(r.paths[0]){$('#'+id).value=r.paths[0];dirty()}}catch(e){toast(e.message,1)}}
+async function saveSettings(){
+  const v=id=>$('#'+id).value, ck=id=>$('#'+id).checked;
+  const tracks=(S.cfg.tracks||[]).filter(t=>t.number>0).map(t=>({number:+t.number,role:t.role,...(t.label?{label:t.label}:{})}));
+  if(!tracks.some(t=>t.role==='mic'))return toast('One track needs to be “My mic”',1);
+  const body={claude_backend:S.cfg.claude_backend||'subscription',api_key:$('#s_key')?v('s_key'):'',claude_model:v('s_model'),highlights_per_hour:+v('s_ph')||5,channel_context:v('s_ctx'),editing_goal:v('s_goal'),
+    vocabulary:v('s_vocab').split(',').map(s=>s.trim()).filter(Boolean),tracks,whisper_model:v('s_wm'),device:v('s_dev'),compute_type:v('s_dev')==='cpu'?'int8':'float16',
+    local_folder:v('s_lf'),keep_extracted_audio:ck('s_keep'),
+    youtube_channels:v('s_yt').split(/[,\n]/).map(x=>x.trim()).filter(Boolean),learn_videos:+v('s_lv')||0,learn_shorts:+v('s_ls')||0,
+    use_channel_profile:ck('s_useprof'),channel_profile:v('s_prof'),
+    discord_webhook:v('s_wh'),hosting:{endpoint:v('s_hep').trim(),bucket:v('s_hb').trim(),public_url:v('s_hpu').trim(),clip_quality:v('s_hq')},r2_access_key:v('s_hid').trim(),r2_secret:v('s_hsec').trim(),discord:{mention:v('s_dm').trim(),top_n:(S.cfg.discord||{}).top_n||12,attach_files:true,clips:ck('s_dclips'),clip_max:+v('s_dlen')||60,upload_mb:+v('s_dmb')||10},keep_running:ck('s_keeprun'),
+    scan_model:v('s_scan'),make_previews:ck('s_prev'),
+    focus_presets:(S.cfg.focus_presets||[]).filter(p=>(p.name||'').trim()).map(p=>({name:p.name.trim(),keywords:p.keywords||[],text:(p.text||'').trim()})),chat_delay_seconds:Math.max(0,+v('s_cd')||0),
+    whisper_batch_size:+v('s_bs')||8,low_vram:ck('s_lowvram'),background_priority:ck('s_prio'),prefetch:ck('s_prefetch'),
+    google_drive:{folder_id:v('s_fid'),download_dir:v('s_dl'),results_dir:v('s_rd'),delete_after_analysis:ck('s_del')}};
+  try{await api('/api/config',body);S.dirty=false;S.cfg=await api('/api/config');renderSettings();$('#saveMsg').textContent='Saved ✓';toast('Settings saved');S.drive=null;S.local=null}catch(e){toast(e.message,1)}
+}
+async function learnChannel(){
+  if(!$('#s_yt').value.trim()){toast('Add your channel link first',1);$('#s_yt').focus();return}
+  if(S.dirty){await saveSettings();if(S.dirty)return}
+  try{await api('/api/learn',{});toast('Studying your channel…');show('jobs')}catch(e){toast(e.message,1)}
+}
+function gotoProfile(){S.dirty=false;S.cfg=null;show('settings');setTimeout(()=>$('#profileAnchor')?.scrollIntoView({behavior:'smooth'}),400)}
+async function hostingTest(){
+  try{await saveSettings(); if(S.dirty)return;
+    toast('Testing…'); const r=await api('/api/hosting/test',{}); toast(r.message||'Connected')}catch(e){toast(e.message,1)}
+}
+async function discordTest(){
+  try{ if($('#s_wh').value.trim()){await saveSettings(); if(S.dirty)return}
+    await api('/api/discord/test',{}); toast('Test message sent — check the channel');}catch(e){toast(e.message,1)}
+}
+async function quitApp(){try{await api('/api/quit',{})}catch(e){} document.body.innerHTML='<div class="empty" style="padding-top:30vh"><h3>SkyEye has quit.</h3><p>You can close this window.</p></div>'; setTimeout(()=>window.close(),400)}
+
+/* --------------------------------------------------------------- boot */
+poll().then(()=>loadRec(false));
+</script>
+</body>
+</html>
