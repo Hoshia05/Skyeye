@@ -1,64 +1,82 @@
-# SkyEye
+# SkyEye 👁️
 
-SkyEye finds the parts of your stream recordings that are worth editing and makes a report you can hand to your editors.
+방송 녹화본에서 **편집할 만한 장면**을 찾아서, 편집자에게 넘길 목록을 만들어 주는 Windows 프로그램입니다.
 
-It pulls recordings from your Google Drive folder (or this PC) and transcribes your mic, Discord and donation tracks separately on your GPU. It marks loud reactions and donations, then has Claude pick highlight segments with times, scores, reasons and notes for the editor.
+![SkyEye 리포트 화면 (샘플 데이터)](docs/screenshot-report.png)
 
-## Start
+> 스크린샷은 가짜 샘플 데이터입니다. 실제 방송 내용이 아닙니다.
 
-**Double-click `SkyEye.bat`.** The first time, it installs everything (a few minutes) and puts a **SkyEye** shortcut on your desktop. After that, just use the shortcut.
+**장면은 스트리머가 직접 고릅니다. 편집자는 편집만 합니다.** SkyEye는 후보를 보여 주고, 사용자가 **Keep / Skip**을 누르고, Keep한 장면만 Discord로 편집자에게 보냅니다.
 
-If Python isn't installed, it tells you. Install Python with `winget install Python.Python.3.12` and start SkyEye again.
+## 어떻게 동작하나요
 
-## First-time setup (inside the app → Settings)
+1. **녹화 가져오기**: Google Drive 폴더(또는 이 PC)에서 녹화를 받습니다. 원본은 읽기만 하고 절대 바꾸지 않습니다.
+2. **받아쓰기**: 마이크·디스코드·후원 같은 오디오 트랙을 따로 GPU(Whisper)로 받아 적습니다.
+3. **신호 찾기**: 큰 리액션, 후원, 방송 중 ⭐로 찍어 둔 순간, (있으면) 채팅 폭주를 표시합니다.
+4. **Claude가 고르기**: 빠른 모델이 후보를 넓게 훑고, 메인 모델이 앞뒤 맥락을 읽어 진짜 장면만 시작·끝 시간과 함께 남깁니다.
+5. **리뷰**: 각 장면의 미리보기 클립을 보고 **K**(Keep) / **S**(Skip)로 빠르게 고릅니다.
+6. **편집자에게 전송**: **Send to editors**를 누르면 Keep한 장면만 담은 웹페이지 링크가 Discord 카드로 올라갑니다.
 
-1. **Claude**: choose how Claude runs.
-   - **My Claude subscription** (the default): click *Install Claude Code*. A window opens that installs Claude Code (Anthropic's official tool) and asks you to log in with your Claude account. Choose your subscription, not Console. There's no extra cost, but the analysis counts toward your plan's usage limits, the same ones your chats use.
-   - **API key**: pay per use from prepaid credits at platform.claude.com. It doesn't touch your plan's limits.
-2. **Google Drive**: click *Connect Google Drive* if it isn't connected already.
-3. **Audio tracks**: go to Recordings and click **Tracks** on any recording. Once it's ready, click *Set up tracks*. You'll get a player and a "how much sound" bar for each track, and you pick what each one is. Then save.
-4. **About your channel**: add characters, running jokes, nicknames and what your editors like. This makes the biggest difference to the picks.
-5. **Learn from my YouTube channel**: paste your channel link and click *Learn from my channel*. SkyEye reads your uploaded edits and Shorts (titles, view counts, chapters and auto-subtitles) and has Claude write a **style profile**: which kinds of moments your channel turns into videos, what performs best, your title patterns and running jokes. Every stream analysis then looks for moments that fit that style. You can edit the profile yourself, and click *Learn again* after you've uploaded more videos.
+> 분석이 끝나도 **자동으로 올라가는 건 없습니다.** 전송 버튼을 눌러야만 Discord에 올라갑니다.
 
-## Everyday use
+## 시작하기
 
-- **Recordings**: your Drive folder (or *This PC*), with each recording marked *New*, *Transcribed* or *Analyzed*. Tick a few and click **Analyze selected**, or use *Select new*.
-- **Jobs**: live progress: download → extract audio → transcribe → audio signals → Claude → report. You can cancel, and you can queue as many as you like.
-- **Reports**: every analyzed stream. Open one to see:
-  - a **timeline** of the stream showing your voice level, game level, loud reactions, donations, chapters, and every pick as a colored block you can click
-  - the picks, which you can filter by main edit / Shorts, category and score
-  - a transcript for each pick, plus a searchable full transcript
-  - **YouTube archive** link: paste the stream's archive link and every timestamp becomes a clickable YouTube link, in the app, the report and Discord
-  - **Re-run Claude**, which re-analyzes without re-transcribing (for example after you improve the channel description)
-- **Review mode** (on the Picks tab of a report): every pick has a short **preview clip**, so you can judge it in seconds without opening the stream.
-  - Press **K** to keep, **S** to skip, **Space** to play, **↑/↓** to move, **U** to undo. After each decision it jumps to the next pick and starts its preview.
-  - **Send to editors** builds one web page with only the moments you kept (summary, timeline, every moment with its clip playing inside), puts it online (see *Editor page* below) and posts a single Discord card with the link. If you haven't set up the Editor page, it posts the card with a clip per moment instead.
-  - Your Keep/Skip decisions are remembered, and future analyses use them as examples of your taste.
-  - Preview clips are kept for 3 months, then removed automatically to save space (reports and transcripts stay).
-- **Focus: tell Claude what to look for** (Settings → Focus presets). When you click **Analyze selected** (or **Re-run Claude** on a report), a small window asks what to focus on. Claude then finds **every** matching moment, even ones that aren't funny, marks them 🎯 in the report (and on the editors' page), and they don't count toward the "picks per hour" target.
-  - **Auto (match by title)**, the default, picks the first preset whose keywords appear in the recording's file name (for example `에컴` → *Ace Combat*), and the window shows what it picked for each file. Choose **None**, or a specific preset, to override it. The *Extra instructions* box adds a one-off instruction on top (or works alone).
-  - Presets ship with two examples (*Ace Combat*: every crash and the reaction; *Trickal*: emotional reactions). Edit or add your own in Settings; each has a name, file-name keywords (comma-separated) and the instruction.
-  - **Re-run Claude** is how you redo an old stream with a focus: the transcript is reused, so it's quick. The picks are rebuilt, so earlier Keep/Skip choices only stay on moments whose times didn't change. The report header shows `🎯 Focus: …`, and the Picks tab has a **🎯 Focus** filter.
-- **Chat from Arkbird** (optional): if Arkbird saves the stream's chat into the `….markers.json` file you already upload (version 2, see `STREAM_DESK_MARKERS.md`), SkyEye reads it as extra context: what you were answering, exact donation messages, and 📈 chat bursts (a sudden pile of ㅋㅋㅋ). Chat appears in the report (a Chat row on the timeline, and chat lines in the transcripts, also on the editors' page). Your own chat lines are skipped. Viewers react a few seconds after what happens, so SkyEye moves chat earlier by **Chat delay** (Settings → Chat from Arkbird, default 6 s). Without a chat file, nothing changes.
-- **How the picks are found**: in **two passes**. A fast model scans the stream in 15-minute pieces and lists many possible moments, then the main model reads each candidate with its context and keeps the real ones with tight start/end times.
-- **Discord** (Settings → Discord): paste a webhook link for your crew's channel. In Discord: right-click the channel → *Edit Channel* → *Integrations* → *Webhooks* → *New Webhook* → *Copy Webhook URL*.
-  - **Nothing is posted automatically.** After an analysis, go through the picks in review mode and press **Send to editors**. Only then does SkyEye post a card with the stream summary, the moments you kept (times link to YouTube if you set the archive link) and the report file.
-  - **Video clips (only without the Editor page):** under the card, each pick gets its own message with a **playable clip** of that moment (2 s before to 2 s after, up to 60 s), so editors can watch it right in Discord. The clips are cut from the review previews and fit the server's upload limit (10 MB normally; pick 50 or 100 MB in Settings if the server is boosted). They're deleted from this PC once posted.
-  - You can choose who gets pinged (nobody, @here or a role).
-- **⭐ Marks from Stream Desk**: moments you mark during the stream (saved as chapters inside the recording, or in a `….markers.json` file uploaded to the same Drive folder) are always included as candidates and shown as ★ on the timeline. See `STREAM_DESK_MARKERS.md`.
+**`SkyEye.bat`을 더블클릭**하세요. 처음엔 설치(몇 분)와 바탕화면 **SkyEye** 바로가기 만들기까지 자동으로 합니다. 이후엔 바로가기로 실행합니다.
 
-- **Editor page** (Settings → Editor page): SkyEye uploads the editors' page and the clips of the moments you kept to a free **Cloudflare R2** bucket and posts only the link to Discord. Each stream gets its own long, hidden folder, so only people with the link can open it. One-time setup in Cloudflare: turn on R2, create a bucket, allow public access (r2.dev), add a lifecycle rule that deletes objects after a while (90 or 180 days), and create an API token with *Object Read & Write* for that bucket. Then paste the Endpoint URL, bucket name, Public URL, Access Key ID and Secret into Settings and click *Test connection*. The uploaded clips are small 360p copies made once when you send (pick *Original* under *Clip quality* for the 480p previews); a 4-hour stream with about 20 kept moments is roughly 70-100 MB instead of ~215 MB. Sending again later updates the same link, and moments you un-kept are removed from the bucket. A copy of the page is also saved in the report's folder (`editor_page`).
+Python이 없다고 나오면 `winget install Python.Python.3.12` 후 다시 실행하세요.
 
-**Your recordings on Google Drive are never deleted, moved or changed.** SkyEye only reads them. To process a recording it downloads a temporary copy to this PC, and by default removes that copy afterwards to save space (Settings → *Clean up this PC*). It never writes anything to your Drive; reports reach your editors through Discord.
+### 첫 설정 (앱 안의 Settings)
 
-SkyEye keeps running in the background until you click **Quit SkyEye** (Settings → App), so it no longer goes to sleep on its own. Reopening the shortcut brings its window back. While a job is running, your PC won't go to sleep (the screen can still turn off).
+1. **Claude**: 내 구독으로 쓰려면 *Install Claude Code*를 누르고 안내대로 로그인합니다(추가 비용 없음, 구독 사용량에서 차감). API 키로 쓰는 방법도 있습니다.
+2. **Google Drive**: *Connect Google Drive*.
+3. **오디오 트랙**: Recordings에서 녹화 하나의 **Tracks**를 눌러 각 트랙이 무엇인지(마이크, 게임, 디스코드…) 지정합니다.
+4. **채널 소개**: 캐릭터, 밈, 별명, 편집자가 좋아하는 스타일을 적습니다. 결과 품질에 가장 큰 영향을 줍니다.
+5. **내 YouTube 채널 학습**: 채널 링크를 넣고 *Learn from my channel*을 누르면, 올린 영상의 제목·조회수 등을 읽고 **스타일 프로필**을 만들어 분석에 반영합니다.
+6. **Discord**: 채널 설정 → 연동 → 웹후크에서 URL을 복사해 붙여넣습니다.
 
-## Files you should keep private
+## 매일 쓰는 법
 
-`api_key.txt` (Claude key, if you use one), `rclone.conf` (Drive login), `discord_webhook.txt` (anyone with it can post in your channel) and `r2_keys.json` (can upload to your Cloudflare bucket).
+| 메뉴 | 하는 일 |
+|---|---|
+| **Recordings** | 녹화 목록(New / Transcribed / Analyzed). 체크하고 **Analyze selected** |
+| **Jobs** | 진행 상황(다운로드 → 오디오 → 받아쓰기 → Claude → 리포트). 취소·대기열 가능 |
+| **Reports** | 타임라인, 장면 목록, 대본, **Re-run Claude**(받아쓰기 없이 다시 분석) |
+| **Settings** | 위의 모든 설정 |
 
-## Troubleshooting
+**리뷰 단축키**: `K` Keep · `S` Skip · `Space` 재생 · `↑/↓` 이동 · `U` 되돌리기. Keep/Skip 기록은 다음 분석에서 내 취향 예시로 쓰입니다.
 
-- **The app doesn't open**: look at `app.log` in this folder.
-- **"GPU load failed … falling back to CPU"**: update your NVIDIA driver, then run `setup.bat` again.
-- **Drive errors about login or token**: go to Settings → Google Drive → *Log in again*.
+### 🎯 Focus: 이번 방송에서 꼭 찾을 것 지정
+
+Analyze나 Re-run을 누르면 작은 창이 떠서 "이번엔 뭘 찾을지"를 물어봅니다.
+
+- **Auto**(기본): 파일 이름에 키워드가 있는 첫 프리셋을 고릅니다. 예: `에컴` → *Ace Combat*
+- **None**: 평소처럼. **프리셋 선택** 또는 **Extra instructions**(추가 지시)도 가능합니다.
+- Focus에 걸린 장면은 웃기지 않아도 **전부** 찾아 🎯로 표시합니다(리포트·편집자 페이지 모두).
+- 프리셋은 Settings → Focus presets에서 추가·수정합니다(기본: Ace Combat, Trickal).
+
+### 💬 Arkbird 채팅 (선택)
+
+Arkbird가 올리는 `….markers.json`(버전 2)에 채팅이 들어 있으면, SkyEye가 후원 메시지·"ㅋㅋㅋ" 폭주 같은 반응을 참고하고 리포트에도 보여 줍니다. 시청자 반응은 몇 초 늦으니 **Chat delay**(기본 6초)만큼 앞당겨 읽습니다. 채팅 파일이 없으면 평소와 똑같이 동작합니다. 형식은 `STREAM_DESK_MARKERS.md`, `docs/ARKBIRD_CHAT_LOG.md` 참고.
+
+### 🌐 편집자 페이지 (Cloudflare R2, 선택)
+
+Settings → Editor page를 설정하면 Keep한 장면과 작은 클립(360p)을 R2에 올리고 **링크 하나**만 Discord에 올립니다. 스트림마다 길고 추측 불가능한 주소를 쓰니 링크를 아는 사람만 열 수 있습니다. 설정 안 하면 Discord 카드 아래에 장면별 클립이 올라갑니다.
+
+Cloudflare에서 해 둘 것: R2 켜기 → 버킷 만들기 → 공개 접근(r2.dev) 허용 → 일정 기간 뒤 삭제 규칙(90~180일) → *Object Read & Write* API 토큰 발급. 그 값을 Settings에 넣고 *Test connection*을 누릅니다.
+
+## 안전 · 개인정보
+
+- **Google Drive의 녹화는 삭제·이동·수정하지 않습니다.** 읽기 전용이며, 처리용 임시 복사본만 이 PC에서 지웁니다.
+- 앱은 **Quit SkyEye**(Settings → App)를 누를 때까지 백그라운드에서 계속 실행되고, 작업 중에는 PC가 잠들지 않습니다.
+- **공개하면 안 되는 파일**: `api_key.txt`, `rclone.conf`, `discord_webhook.txt`, `r2_keys.json`, `config.yaml`. 이 저장소는 `.gitignore`로 제외하고 있으니 `git add -f`로 올리지 마세요.
+
+## 문제 해결
+
+- **앱이 안 열려요** → 폴더의 `app.log`를 확인하세요.
+- **"GPU load failed … falling back to CPU"** → NVIDIA 드라이버를 업데이트하고 `setup.bat`을 다시 실행하세요.
+- **Drive 로그인/토큰 오류** → Settings → Google Drive → *Log in again*.
+- **업데이트 후 화면이 그대로예요** → SkyEye 창에서 `Ctrl+R`, 그래도 같으면 Settings → Quit 후 다시 실행하세요.
+
+## 개발자용
+
+`app.py`(GUI 서버) · `scout.py`(엔진) · `twopass.py`(2단계 분석) · `editor_page.py` / `publish.py`(편집자 페이지) · `discord_post.py` · `learn.py` · `ui/index.html`(화면). 자세한 규칙은 `CLAUDE.md`, 다른 프로그램과의 규격은 `docs/`와 `STREAM_DESK_MARKERS.md`에 있습니다.
