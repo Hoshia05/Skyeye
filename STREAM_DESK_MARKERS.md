@@ -1,6 +1,6 @@
 # Stream Desk feature request: "Mark moment" for SkyEye
 
-> **Update (2026-10-20):** Stream Desk is now called **Arkbird**. The same file gets a **version 2** that also holds the stream's chat: an optional `"chat"` array, and the file is written for every recording that has chat or marks (the `"format": "vodscout-markers"` string stays the same). Arkbird writes it (spec: `ARKBIRD_CHAT_LOG.md`) and SkyEye reads it (`scout.read_chat_file`). Version 1 files without chat keep working exactly as described below.
+> **Update (2026-10-20):** Stream Desk is now called **Allmind** (briefly Arkbird). The same file gets a **version 2** that also holds the stream's chat: an optional `"chat"` array, and the file is written for every recording that has chat or marks (the `"format": "vodscout-markers"` string stays the same). Allmind writes it (spec: `ALLMIND_CHAT_LOG.md`) and SkyEye reads it (`scout.read_chat_file`). Version 1 files without chat keep working exactly as described below.
 
 **Context for the Stream Desk developer (Claude session):** Stan (VTuber 호시아) streams on Chzzk with a two-PC setup. He games and talks on the **main PC**. The **stream PC** runs OBS and Stream Desk. OBS records every stream locally (multi-track MP4), and Stan uploads the recordings to a Google Drive folder. A separate program on the main PC, **SkyEye**, later downloads each recording, transcribes it and suggests "fun points" for YouTube edits.
 

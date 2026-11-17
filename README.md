@@ -54,9 +54,9 @@ Analyze나 Re-run을 누르면 작은 창이 떠서 "이번엔 뭘 찾을지"를
 - Focus에 걸린 장면은 웃기지 않아도 **전부** 찾아 🎯로 표시합니다(리포트·편집자 페이지 모두).
 - 프리셋은 Settings → Focus presets에서 추가·수정합니다(기본: Ace Combat, Trickal).
 
-### 💬 Arkbird 채팅 (선택)
+### 💬 Allmind 채팅 (선택)
 
-Arkbird가 올리는 `….markers.json`(버전 2)에 채팅이 들어 있으면, SkyEye가 후원 메시지·"ㅋㅋㅋ" 폭주 같은 반응을 참고하고 리포트에도 보여 줍니다. 시청자 반응은 몇 초 늦으니 **Chat delay**(기본 6초)만큼 앞당겨 읽습니다. 채팅 파일이 없으면 평소와 똑같이 동작합니다. 형식은 `STREAM_DESK_MARKERS.md`, `docs/ARKBIRD_CHAT_LOG.md` 참고.
+Allmind가 올리는 `….markers.json`(버전 2)에 채팅이 들어 있으면, SkyEye가 후원 메시지·"ㅋㅋㅋ" 폭주 같은 반응을 참고하고 리포트에도 보여 줍니다. 시청자 반응은 몇 초 늦으니 **Chat delay**(기본 6초)만큼 앞당겨 읽습니다. 채팅 파일이 없으면 평소와 똑같이 동작합니다. 형식은 `STREAM_DESK_MARKERS.md`, `docs/ALLMIND_CHAT_LOG.md` 참고.
 
 ### 🌐 편집자 페이지 (Cloudflare R2, 선택)
 

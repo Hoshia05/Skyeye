@@ -140,7 +140,7 @@ highlights_per_hour: {_q(c.get('highlights_per_hour', 5))}
 # Settings → Focus presets. "Auto" uses the first preset with a keyword in the file name.
 {_focus_yaml(scout.focus_presets(c))}
 
-# Chat from Arkbird (its markers file): viewers react a few seconds after what happens on stream
+# Chat from Allmind (its markers file): viewers react a few seconds after what happens on stream
 chat_delay_seconds: {_q(_num(c.get('chat_delay_seconds'), 6))}
 
 # Learn the editing style from your existing YouTube videos (Settings → Learn from my channel)
@@ -549,7 +549,7 @@ def result_summary(work: Path) -> dict:
 
 
 def chat_for_report(work: Path, meta: dict) -> dict | None:
-    """Viewer chat from Arkbird for the report: lines [time on video, nick, text, is_donation] + activity per 30 s."""
+    """Viewer chat from Allmind for the report: lines [time on video, nick, text, is_donation] + activity per 30 s."""
     chat = scout.read_saved_chat(work)
     if not chat:
         return None

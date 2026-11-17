@@ -624,7 +624,7 @@ def build_timeline(tracks, transcripts, signals, markers=None, chat=None, chat_d
             if gap >= 180:
                 lines.append((a["end"] + 0.1,
                               f"[{fmt(a['end'])}] … {label[mic]} 발화 없음 (약 {gap / 60:.0f}분)"))
-    vc = viewer_chat(chat or [], chat_delay)                # viewer chat from Arkbird (optional)
+    vc = viewer_chat(chat or [], chat_delay)                # viewer chat from Allmind (optional)
     if vc:
         lines += chat_lines(vc)
         for t, n in chat_bursts([c["te"] for c in vc]):
@@ -1242,8 +1242,8 @@ CHAT_TYPES = ("chat", "donation")          # what SkyEye uses; "subscription"/"g
 
 
 def read_chat_file(path: Path) -> list[dict]:
-    """Chat saved by Arkbird in the same sidecar file as the marks (markers file version 2, see ARKBIRD_CHAT_LOG.md).
-    Version 1 files have no "chat" and give []. Times are raw (when Arkbird got the message); sorted, bad items skipped."""
+    """Chat saved by Allmind in the same sidecar file as the marks (markers file version 2, see ALLMIND_CHAT_LOG.md).
+    Version 1 files have no "chat" and give []. Times are raw (when Allmind got the message); sorted, bad items skipped."""
     try:
         d = json.loads(path.read_text(encoding="utf-8"))
         items = d.get("chat") if isinstance(d, dict) else None
@@ -1622,7 +1622,7 @@ def cmd_run(vod: Path, cfg: dict, redo_ai=False, fresh=False):
     delay = float(cfg.get("chat_delay_seconds") if cfg.get("chat_delay_seconds") is not None else 6)
     vc = viewer_chat(chat, delay)
     if vc:
-        log(f"      💬 {len(vc)} chat message(s) from Arkbird (chat delay {delay:g}s)")
+        log(f"      💬 {len(vc)} chat message(s) from Allmind (chat delay {delay:g}s)")
     timeline = build_timeline(tracks, transcripts, signals, markers, chat, delay)
     (work / "transcript.txt").write_text(
         f"{vod.name} — 전체 전사 + 신호 타임라인\n\n" + "\n".join(l for _, l in timeline), encoding="utf-8")
@@ -1786,7 +1786,7 @@ def drive_fetch_markers(d: dict, item: dict, work: Path, duration: float | None 
     stem = Path(item["Name"]).stem
     cand = [n for n in names if n.removesuffix(".markers.json") == stem]
     if not cand:
-        # Arkbird now writes a file for every stream, so there can be many: if the recording was renamed, only look at
+        # Allmind now writes a file for every stream, so there can be many: if the recording was renamed, only look at
         # the ones uploaded closest to it in time (match_marker_files then checks the length, within 5 s).
         mod = {x["Name"]: _iso_secs(x.get("ModTime")) for x in entries}
         ref = _iso_secs(item.get("ModTime"))

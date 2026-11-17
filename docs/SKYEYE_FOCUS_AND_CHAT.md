@@ -1,8 +1,8 @@
-# SkyEye task: Focus instructions + reading Arkbird's chat log
+# SkyEye task: Focus instructions + reading Allmind's chat log
 
 **For the SkyEye Claude session.** Read `CLAUDE.md` first: hard rules, deploy steps and conventions all apply. Talk to Stan in English, in plain words. Program UI text stays English as it is now; Claude prompts stay Korean.
 
-There are two parts. Part A is the main job. Part B reads a new chat log that Arkbird (formerly Stream Desk, Stan's stream-PC dashboard) will write into the existing markers file. The Arkbird side is specified separately in `ARKBIRD_CHAT_LOG.md`, and section B1 below repeats the format.
+There are two parts. Part A is the main job. Part B reads a new chat log that Allmind (formerly Stream Desk, Stan's stream-PC dashboard) will write into the existing markers file. The Allmind side is specified separately in `ALLMIND_CHAT_LOG.md`, and section B1 below repeats the format.
 
 ---
 
@@ -67,10 +67,10 @@ Inject the focus into **both** passes. If the focus is empty, the prompts must s
 
 ---
 
-## Part B: Read Arkbird's chat log
+## Part B: Read Allmind's chat log
 
-### B1. The format (written by Arkbird; see `ARKBIRD_CHAT_LOG.md`)
-Arkbird extends the existing `<recording>.markers.json`. The `format` string stays `"vodscout-markers"` on purpose. It changes only:
+### B1. The format (written by Allmind; see `ALLMIND_CHAT_LOG.md`)
+Allmind extends the existing `<recording>.markers.json`. The `format` string stays `"vodscout-markers"` on purpose. It changes only:
 - `"version": 2`
 - the file is now written for **every** recording that has chat or marks, not only when there are marks
 - an optional `"chat"` array:
@@ -83,7 +83,7 @@ Arkbird extends the existing `<recording>.markers.json`. The `format` string sta
 ]
 ```
 
-- `t` = seconds from the start of the recording file, in the same clock as markers. It's **when Arkbird received the message**: no delay correction is applied by Arkbird.
+- `t` = seconds from the start of the recording file, in the same clock as markers. It's **when Allmind received the message**: no delay correction is applied by Allmind.
 - `role` is one of `streamer | manager | viewer`. `amount` is only on donations and is optional.
 - Version 1 files (no `chat`) must keep working exactly as now.
 
@@ -119,8 +119,8 @@ Viewers react a few seconds **after** the moment, because of stream latency plus
 ---
 
 ## Deliver
-- Update `README.md` with a Focus section and a "Chat from Arkbird" note, and `CLAUDE.md` with the pipeline line and conventions.
-- Update `STREAM_DESK_MARKERS.md` with a short pointer that v2 adds `chat`, written by Arkbird.
+- Update `README.md` with a Focus section and a "Chat from Allmind" note, and `CLAUDE.md` with the pipeline line and conventions.
+- Update `STREAM_DESK_MARKERS.md` with a short pointer that v2 adds `chat`, written by Allmind.
 - Deploy through the device bridge and verify file sizes by listing the folder. If a file is stale, re-commit it from a new staged path.
 - Tell Stan in plain words:
   - what to click

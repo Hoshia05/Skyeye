@@ -544,7 +544,7 @@ function renderReport(){
   el.innerHTML=`<div class="back" onclick="S.report=null;loadResults()">← All reports</div>
   <div class="rhead" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
     <div class="grow" style="min-width:300px"><h1>${esc((R.meta.vod||'').replace(/\.[^.]+$/,''))}</h1>
-      <div class="meta"><span>${fmtDur(dur)} stream</span><span>${hs.length} picks</span><span>${hs.filter(h=>h.format!=='본편').length} shorts ideas</span>${R.meta.generated?`<span>analyzed ${esc(R.meta.generated)}</span>`:''}${a.model?`<span>${esc(a.model)}</span>`:''}${R.meta.focus&&R.meta.focus.text?`<span class="chip focus" title="${esc(R.meta.focus.text)}">🎯 Focus: ${esc(R.meta.focus.preset||'Custom')}</span>`:''}${R.chat?`<span title="Viewer chat saved by Arkbird (delay ${R.chat.delay}s)">💬 ${R.chat.count} chat</span>`:''}</div></div>
+      <div class="meta"><span>${fmtDur(dur)} stream</span><span>${hs.length} picks</span><span>${hs.filter(h=>h.format!=='본편').length} shorts ideas</span>${R.meta.generated?`<span>analyzed ${esc(R.meta.generated)}</span>`:''}${a.model?`<span>${esc(a.model)}</span>`:''}${R.meta.focus&&R.meta.focus.text?`<span class="chip focus" title="${esc(R.meta.focus.text)}">🎯 Focus: ${esc(R.meta.focus.preset||'Custom')}</span>`:''}${R.chat?`<span title="Viewer chat saved by Allmind (delay ${R.chat.delay}s)">💬 ${R.chat.count} chat</span>`:''}</div></div>
     <div class="row2" style="flex-wrap:wrap">
       ${R.editor_page?`<a class="btn" href="${esc(R.editor_page)}" target="_blank" title="The page your editors open (sent with “Send to editors”)">${ICON.ext} Editor page</a>`:''}
       <button class="btn" onclick="openFile('html')">${ICON.ext} HTML</button>
@@ -582,7 +582,7 @@ function timelineSVG(R,dur){
   (sig[game]?.spikes||[]).forEach(p=>{s+=`<path d="M${x(p.t)} 2 l3 6 h-6z" fill="#34d399" opacity=".7"/>`});
   (sig[dono]?.events||[]).forEach(e=>{s+=`<circle cx="${x(e.start)}" cy="60" r="2.6" fill="#f472b6"/>`});
   (R.meta.markers||[]).forEach(m=>{s+=`<text x="${x(m.t)}" y="68" font-size="13" text-anchor="middle" fill="#fbbf24">★</text><line x1="${x(m.t)}" x2="${x(m.t)}" y1="0" y2="128" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2 3" opacity=".6"/>`});
-  // chat activity (Arkbird): a thin row under the chapters, taller bars = busier chat
+  // chat activity (Allmind): a thin row under the chapters, taller bars = busier chat
   if(R.chat&&R.chat.bins&&R.chat.bins.length){const mx=Math.max(1,...R.chat.bins),bw=Math.max(1.2,W*R.chat.bin/dur);
     R.chat.bins.forEach((n,i)=>{if(n)s+=`<rect x="${(i*R.chat.bin/dur*W).toFixed(1)}" y="${(139-9*Math.min(1,n/mx)).toFixed(1)}" width="${bw.toFixed(1)}" height="${(9*Math.min(1,n/mx)).toFixed(1)}" fill="#38bdf8" opacity=".6"/>`});
     (R.chat.bursts||[]).forEach(([t,n])=>{s+=`<path d="M${x(t)} 129 l3 -4 h-6z" fill="#38bdf8"/>`})}
@@ -770,7 +770,7 @@ function renderSettings(){
   <div class="card sec" id="focusAnchor"><h3>Focus presets</h3><div class="desc">Tell Claude what to look for in a certain kind of stream, for example every crash in Ace Combat or the emotional moments in Trickal. When you analyze, “Auto” picks the first preset whose keyword appears in the recording’s file name; you can also pick one yourself or type something extra. Claude then finds every matching moment, even ones that aren’t funny, and marks them 🎯 in the report.</div>
     <div id="fpRows"></div><button class="btn sm" onclick="fpAdd()">＋ Add preset</button>
   </div>
-  <div class="card sec"><h3>Chat from Arkbird</h3><div class="desc">If Arkbird saved your stream chat next to the recording (the “….markers.json” file you already upload), SkyEye reads it for extra context: what you were answering, chat bursts and exact donation messages. Nothing to switch on here; it just works when the file has chat.</div>
+  <div class="card sec"><h3>Chat from Allmind</h3><div class="desc">If Allmind saved your stream chat next to the recording (the “….markers.json” file you already upload), SkyEye reads it for extra context: what you were answering, chat bursts and exact donation messages. Nothing to switch on here; it just works when the file has chat.</div>
     ${fld('Chat delay',`<div class="row2" style="align-items:center"><input class="inp" type="number" min="0" max="60" step="1" id="s_cd" value="${c.chat_delay_seconds??6}" style="width:90px"><span class="small muted">seconds</span></div>`,'How many seconds chat lags behind you (stream delay plus reading and typing). SkyEye moves every chat line this much earlier so it lines up with what actually happened.')}
   </div>
   <div class="card sec" id="profileAnchor"><h3>Learn from my YouTube channel</h3><div class="desc">SkyEye reads your uploaded edits and Shorts (titles, view counts, chapters and subtitles) and writes a style profile: what kinds of moments your channel turns into videos and what performs best. Every stream analysis uses it.</div>

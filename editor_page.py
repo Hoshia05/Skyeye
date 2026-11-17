@@ -110,7 +110,7 @@ def build(work: Path, cfg: dict, picks: list[dict], quality: str = "small",
     analysis = json.loads((work / "analysis.json").read_text(encoding="utf-8"))
     tx = _transcript(work, meta)
     delay = meta.get("chat_delay")
-    chat = scout.viewer_chat(scout.read_saved_chat(work), float(delay if delay is not None else 6))   # Arkbird chat, if any
+    chat = scout.viewer_chat(scout.read_saved_chat(work), float(delay if delay is not None else 6))   # Allmind chat, if any
     clips: list[tuple[str, Path]] = []
     items = []
     for i, h in enumerate(picks):

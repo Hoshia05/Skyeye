@@ -1,17 +1,17 @@
-# Arkbird task: save the stream's chat log for SkyEye
+# Allmind task: save the stream's chat log for SkyEye
 
-**For the Arkbird Claude session** (Arkbird was formerly Stream Desk; repo `Hoshia05/CentralStreamingHQ`). Talk to Stan in English, in plain words. Arkbird's UI text and release notes stay Korean.
+**For the Allmind Claude session** (Allmind was formerly Stream Desk; repo `Hoshia05/CentralStreamingHQ`). Talk to Stan in English, in plain words. Allmind's UI text and release notes stay Korean.
 
 ## Context
 - Stan (VTuber 호시아) streams on Chzzk with two PCs.
-  - The **stream PC** runs OBS and Arkbird, and nothing heavy.
+  - The **stream PC** runs OBS and Allmind, and nothing heavy.
   - OBS records every stream locally as a multi-track MP4. Stan uploads the recordings to a Google Drive folder.
 - **SkyEye**, a separate program on the main PC, downloads each recording, transcribes it, and has Claude suggest highlight moments for his YouTube editors.
-- SkyEye already reads Arkbird's ⭐ "Mark moment" file, `<recording>.markers.json`. The original spec is `STREAM_DESK_MARKERS.md` in the SkyEye folder: `C:\Users\arkht\Downloads\vod-scout_1\vod-scout\`.
+- SkyEye already reads Allmind's ⭐ "Mark moment" file, `<recording>.markers.json`. The original spec is `STREAM_DESK_MARKERS.md` in the SkyEye folder: `C:\Users\arkht\Downloads\vod-scout_1\vod-scout\`.
 
-**New:** Arkbird already receives Chzzk chat for its chat panel. Save that chat, with timestamps relative to the recording, **into the same markers file**. SkyEye will use it as context, for example "what was he answering?", chat bursts, and exact donation messages. The SkyEye side is being built separately against the format below, so follow it exactly.
+**New:** Allmind already receives Chzzk chat for its chat panel. Save that chat, with timestamps relative to the recording, **into the same markers file**. SkyEye will use it as context, for example "what was he answering?", chat bursts, and exact donation messages. The SkyEye side is being built separately against the format below, so follow it exactly.
 
-> If the ⭐ Mark feature from `STREAM_DESK_MARKERS.md` isn't built yet in Arkbird, build the recording-tracking and file parts of it together with this. Both share the same file and the same OBS events.
+> If the ⭐ Mark feature from `STREAM_DESK_MARKERS.md` isn't built yet in Allmind, build the recording-tracking and file parts of it together with this. Both share the same file and the same OBS events.
 
 ---
 
@@ -44,8 +44,8 @@ Same file, same name rules as now. Keep `"format": "vodscout-markers"` exactly a
 ```
 
 **Fields of each chat item:**
-- **`t`** (required): seconds from the start of the recording **file**, float, at the moment Arkbird **received** the message. Don't add or subtract any delay; SkyEye corrects for stream delay itself.
-- **`type`**: `chat` or `donation`. Optionally `subscription` if Arkbird already sees those. Skip system or notice messages.
+- **`t`** (required): seconds from the start of the recording **file**, float, at the moment Allmind **received** the message. Don't add or subtract any delay; SkyEye corrects for stream delay itself.
+- **`type`**: `chat` or `donation`. Optionally `subscription` if Allmind already sees those. Skip system or notice messages.
 - **`nick`**: the display nickname. Don't store user IDs or channel IDs; they aren't needed.
 - **`role`**: `streamer` | `manager` | `viewer`, mapped from Chzzk's user role (streamer, channel manager, everyone else).
 - **`text`**: the message text. Keep emoji codes or tags as Chzzk sends them, or strip them to plain text; either is fine. Max 500 characters.
@@ -74,11 +74,11 @@ Same file, same name rules as now. Keep `"format": "vodscout-markers"` exactly a
 - **Chat connection drops mid-stream:** reconnect as the panel already does. Keep what you have. Optionally add one `{"t": …, "type": "gap", "text": "chat disconnected 20:31–20:33"}` item so SkyEye knows chat was missing. SkyEye will ignore unknown types safely.
 - **OBS disconnects mid-stream:** keep saving chat using the monotonic clock. When OBS reconnects, re-sync with `GetRecordStatus`. If recording stopped while disconnected, finalize using the last known duration.
 - **Several recordings in one session:** one file per recording. Chat between recordings is not saved.
-- **Arkbird restarted mid-recording:** on startup, if `GetRecordStatus` says recording is active, start a new working file with the start time from `now - outputDuration`. Merge into the existing working file for that recording if it exists.
+- **Allmind restarted mid-recording:** on startup, if `GetRecordStatus` says recording is active, start a new working file with the start time from `now - outputDuration`. Merge into the existing working file for that recording if it exists.
 - **Performance:** the stream PC must stay light. Do no extra polling beyond the 60 s drift check, and no per-message disk writes.
 
 ## 5. Settings
-Add one toggle in Arkbird's settings: **채팅 로그 저장 (SkyEye용)**, on by default. When it's off, behavior is exactly as before (marks only).
+Add one toggle in Allmind's settings: **채팅 로그 저장 (SkyEye용)**, on by default. When it's off, behavior is exactly as before (marks only).
 
 ## 6. How to test
 1. Start an OBS recording.
